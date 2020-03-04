@@ -20,7 +20,7 @@ func (s SessionModel) Create() (*models.Session, error) {
 
 	session := &models.Session{
 		Id:          id,
-		Users:       map[models.UserId]*models.User{},
+		Users:       make(map[models.UserId]*models.User),
 		Votes:       make(map[models.UserId]float32),
 		VotesHidden: false,
 	}

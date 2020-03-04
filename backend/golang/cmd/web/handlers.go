@@ -9,12 +9,6 @@ import (
 )
 
 func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.Header().Set("Allow", "POST")
-		app.clientError(w, http.StatusMethodNotAllowed)
-		return
-	}
-
 	sessionId, err := app.sessions.Create()
 	if err != nil {
 		app.serverError(w, err)
@@ -38,14 +32,17 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 
 	sessionId, err := getSessionId(r)
 	if err != nil {
-		app.clientError(w, 400)
+		app.clientError(w, http.StatusBadRequest)
+		return
 	}
 
 	session, err := app.sessions.Get(sessionId)
 	if err != nil {
-		app.clientError(w, 404)
+		app.clientError(w, http.StatusNotFound)
+		return
 	}
 
+	app.infoLog.Printf("join session %v for user %+v", sessionId, user)
 	user = app.sessionService.JoinSession(session, user)
 
 	err = json.NewEncoder(w).Encode(user)
@@ -56,7 +53,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func getSessionId(r *http.Request) (models.SessionId, error) {
-	sessionIdStr := strings.TrimPrefix(r.URL.Path, "/api/")
+	sessionIdStr := strings.TrimPrefix(r.URL.Path, "/")
 	sessionId, err := strconv.Atoi(sessionIdStr)
 	if err != nil {
 		return -1, err
