@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+const UserIdMaxValue = 420_000
+
 type SessionService struct {
 	mutex *sync.Mutex
 }
@@ -25,6 +27,29 @@ func (s SessionService) JoinSession(session *models.Session, user *models.User) 
 	return user
 }
 
+func (s SessionService) Vote(session *models.Session, vote *models.Vote) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	user, ok := session.Users[vote.UserId]
+	if !ok {
+		return models.ErrNoRecord
+	}
+
+	session.Votes[user.Id] = vote.Vote
+
+	return nil
+}
+
+func (s SessionService) Clear(session *models.Session) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	for v := range session.Votes {
+		delete(session.Votes, v)
+	}
+}
+
 func GenerateRandomId() int {
-	return rand.Intn(100000)
+	return rand.Intn(UserIdMaxValue)
 }

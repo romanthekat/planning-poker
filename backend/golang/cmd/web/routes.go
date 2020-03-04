@@ -1,21 +1,21 @@
 package main
 
 import (
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
 func (app *Application) routes() http.Handler {
-	mux := http.NewServeMux()
+	topMux := mux.NewRouter()
 
-	apiMux := http.NewServeMux()
-	apiMux.HandleFunc("/createSession", app.createSession)
-	apiMux.HandleFunc("/", app.joinSession)
-
-	mux.Handle("/api/", http.StripPrefix("/api", app.postRequest(apiMux)))
+	topMux.HandleFunc("/api/createSession", app.createSession)
+	topMux.HandleFunc("/api/{sessionId}/get/{userId}", app.getSession)
+	topMux.HandleFunc("/api/{sessionId}/join", app.joinSession)
+	topMux.HandleFunc("/api/{sessionId}/vote", app.vote)
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	topMux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
 	//TODO use alice middleware?
-	return app.logRequest(app.authorization(mux))
+	return app.logRequest(app.authorization(topMux))
 }

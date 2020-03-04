@@ -2,13 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"net/http"
 	"rgm-planning-poker/pkg/models"
 	"strconv"
-	"strings"
 )
 
 func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.Header().Set("Allow", "POST")
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return
+	}
+
 	sessionId, err := app.sessions.Create()
 	if err != nil {
 		app.serverError(w, err)
@@ -16,6 +22,38 @@ func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 
 	app.infoLog.Printf("new session created: %+v \n", sessionId)
 	err = json.NewEncoder(w).Encode(sessionId)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+}
+
+func (app *Application) getSession(w http.ResponseWriter, r *http.Request) {
+	sessionId, err := getSessionId(r)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	session, err := app.sessions.Get(sessionId)
+	if err != nil {
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	userId, err := getUserId(r)
+	if err != nil {
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	//TODO concurrency - move to service
+	user := session.Users[userId]
+
+	app.infoLog.Printf("get session %v for user %+v", sessionId, user)
+	//sessionToReturn = app.sessionService.getSessionForUser(session, user)
+
+	err = json.NewEncoder(w).Encode(session)
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -52,12 +90,56 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
+	var vote *models.Vote
+	err := json.NewDecoder(r.Body).Decode(&vote)
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	sessionId, err := getSessionId(r)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	session, err := app.sessions.Get(sessionId)
+	if err != nil {
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	app.infoLog.Printf("vote %+v in session %v", vote, sessionId)
+	err = app.sessionService.Vote(session, vote)
+
+	err = json.NewEncoder(w).Encode(vote)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+}
+
 func getSessionId(r *http.Request) (models.SessionId, error) {
-	sessionIdStr := strings.TrimPrefix(r.URL.Path, "/")
+	vars := mux.Vars(r)
+
+	sessionIdStr := vars["sessionId"]
 	sessionId, err := strconv.Atoi(sessionIdStr)
 	if err != nil {
 		return -1, err
 	}
 
 	return models.SessionId(sessionId), nil
+}
+
+func getUserId(r *http.Request) (models.UserId, error) {
+	vars := mux.Vars(r)
+
+	userIdStr := vars["userId"]
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		return -1, err
+	}
+
+	return models.UserId(userId), nil
 }

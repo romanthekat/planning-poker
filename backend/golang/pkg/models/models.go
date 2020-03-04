@@ -15,13 +15,18 @@ type Session struct {
 	Id          SessionId          `json:"id"`
 	Users       map[UserId]*User   `json:"users"`
 	Votes       map[UserId]float32 `json:"votes"`
-	VotesHidden bool               `json:"votesHidden"`
+	VotesHidden bool               `json:"votes_hidden"`
 }
 
 type User struct {
 	Id         UserId `json:"id"`
 	Name       string `json:"name"`
 	lastActive time.Time
+}
+
+type Vote struct {
+	UserId UserId  `json:"user_id"`
+	Vote   float32 `json:"vote"`
 }
 
 //SessionModel defines model/DAO methods for Session
