@@ -112,6 +112,10 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 
 	app.infoLog.Printf("vote %+v in session %v", vote, sessionId)
 	err = app.sessionService.Vote(session, vote)
+	if err != nil {
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
 
 	err = json.NewEncoder(w).Encode(vote)
 	if err != nil {
