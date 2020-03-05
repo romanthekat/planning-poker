@@ -15,13 +15,14 @@ func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionId, err := app.sessions.Create()
+	session, err := app.sessionService.Create()
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
-	app.infoLog.Printf("new session created: %+v \n", sessionId)
-	err = json.NewEncoder(w).Encode(sessionId)
+	app.infoLog.Printf("new session created: %+v \n", session)
+	err = json.NewEncoder(w).Encode(session)
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -35,7 +36,7 @@ func (app *Application) getSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := app.sessions.Get(sessionId)
+	session, err := app.sessionService.Get(sessionId)
 	if err != nil {
 		app.clientError(w, http.StatusNotFound)
 		return
@@ -74,7 +75,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := app.sessions.Get(sessionId)
+	session, err := app.sessionService.Get(sessionId)
 	if err != nil {
 		app.clientError(w, http.StatusNotFound)
 		return
@@ -104,7 +105,7 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := app.sessions.Get(sessionId)
+	session, err := app.sessionService.Get(sessionId)
 	if err != nil {
 		app.clientError(w, http.StatusNotFound)
 		return

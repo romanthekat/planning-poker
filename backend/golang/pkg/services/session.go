@@ -9,11 +9,12 @@ import (
 const UserIdMaxValue = 420_000
 
 type SessionService struct {
-	mutex *sync.Mutex
+	sessions models.SessionModel
+	mutex    *sync.Mutex
 }
 
-func NewSessionService() *SessionService {
-	return &SessionService{&sync.Mutex{}}
+func NewSessionService(sessions models.SessionModel) *SessionService {
+	return &SessionService{sessions, &sync.Mutex{}}
 }
 
 func (s SessionService) JoinSession(session *models.Session, user *models.User) *models.User {
@@ -48,6 +49,14 @@ func (s SessionService) Clear(session *models.Session) {
 	for v := range session.Votes {
 		delete(session.Votes, v)
 	}
+}
+
+func (s SessionService) Create() (*models.Session, error) {
+	return s.sessions.Create()
+}
+
+func (s SessionService) Get(id models.SessionId) (*models.Session, error) {
+	return s.sessions.Get(id)
 }
 
 func GenerateRandomId() int {
