@@ -1,1 +1,32 @@
 = planning-poker
+
+== endpoints
+
+[source]
+----
+POST localhost:10080/api/createSession
+----
+
+[source]
+----
+POST localhost:10080/api/SESSION_ID/join
+Content-Type: application/json
+{
+"name": "Roman"
+}
+----
+
+[source]
+----
+POST localhost:10080/api/SESSION_ID/vote
+Content-Type: application/json
+{
+"user_id": USER_ID,
+"vote": 42.42
+}
+----
+
+[source]
+----
+GET localhost:10080/api/SESSION_ID/get/USER_ID
+----
