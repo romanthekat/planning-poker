@@ -12,8 +12,13 @@ POST localhost:10080/api/createSession
 POST localhost:10080/api/SESSION_ID/join
 Content-Type: application/json
 {
-"name": "Roman"
+    "name": "Roman"
 }
+----
+
+[source]
+----
+GET localhost:10080/api/SESSION_ID/get/USER_ID
 ----
 
 [source]
@@ -21,12 +26,7 @@ Content-Type: application/json
 POST localhost:10080/api/SESSION_ID/vote
 Content-Type: application/json
 {
-"user_id": USER_ID,
-"vote": 42.42
+    "user_id": USER_ID,
+    "vote": 42.42
 }
-----
-
-[source]
-----
-GET localhost:10080/api/SESSION_ID/get/USER_ID
 ----
