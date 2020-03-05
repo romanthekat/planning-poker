@@ -52,11 +52,22 @@ func (s SessionService) Clear(session *models.Session) {
 }
 
 func (s SessionService) Create() (*models.Session, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	return s.sessions.Create()
 }
 
 func (s SessionService) Get(id models.SessionId) (*models.Session, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	return s.sessions.Get(id)
+}
+
+func (s SessionService) GetMaskedSessionForUser(session *models.Session, id models.UserId) *models.Session {
+	//TODO impl
+	return session
 }
 
 func GenerateRandomId() int {
