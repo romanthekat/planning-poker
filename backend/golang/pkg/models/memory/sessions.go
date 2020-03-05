@@ -4,7 +4,10 @@ import (
 	"math/rand"
 	"rgm-planning-poker/pkg/models"
 	"sync"
+	"time"
 )
+
+const SessionExpirationMin = 42.0
 
 type SessionModel struct {
 	sessions map[models.SessionId]*models.Session
@@ -12,7 +15,28 @@ type SessionModel struct {
 }
 
 func NewSessionModel() *SessionModel {
-	return &SessionModel{make(map[models.SessionId]*models.Session), &sync.Mutex{}}
+	sessionModel := &SessionModel{make(map[models.SessionId]*models.Session), &sync.Mutex{}}
+
+	go removeExpiredSessions(sessionModel)
+
+	return sessionModel
+}
+
+func removeExpiredSessions(sessionModel *SessionModel) {
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		sessionModel.mutex.Lock()
+
+		for _, session := range sessionModel.sessions {
+			if time.Now().Sub(session.LastActive).Minutes() > SessionExpirationMin {
+				delete(sessionModel.sessions, session.Id)
+			}
+		}
+
+		sessionModel.mutex.Unlock()
+	}
 }
 
 func (s SessionModel) Create() (*models.Session, error) {
@@ -23,6 +47,7 @@ func (s SessionModel) Create() (*models.Session, error) {
 		Users:       make(map[models.UserId]*models.User),
 		Votes:       make(map[models.UserId]float32),
 		VotesHidden: false,
+		LastActive:  time.Now(),
 	}
 
 	s.update(func() { s.sessions[id] = session })

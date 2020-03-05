@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"rgm-planning-poker/pkg/models"
 	"sync"
+	"time"
 )
 
 const UserIdMaxValue = 420_000
@@ -62,7 +63,14 @@ func (s SessionService) Get(id models.SessionId) (*models.Session, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	return s.sessions.Get(id)
+	session, err := s.sessions.Get(id)
+	if err != nil {
+		return nil, err
+	}
+
+	session.LastActive = time.Now()
+
+	return session, err
 }
 
 func (s SessionService) GetMaskedSessionForUser(session *models.Session, id models.UserId) *models.Session {

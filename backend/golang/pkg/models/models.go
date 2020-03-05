@@ -16,6 +16,7 @@ type Session struct {
 	Users       map[UserId]*User   `json:"users"`
 	Votes       map[UserId]float32 `json:"votes"`
 	VotesHidden bool               `json:"votes_hidden"`
+	LastActive  time.Time
 }
 
 type User struct {
