@@ -48,13 +48,10 @@ func (app *Application) getSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO concurrency - move to service
-	user := session.Users[userId]
+	app.infoLog.Printf("get session %v for user %+v", sessionId, userId)
+	sessionToReturn := app.sessionService.GetMaskedSessionForUser(session, userId)
 
-	app.infoLog.Printf("get session %v for user %+v", sessionId, user)
-	//sessionToReturn = app.sessionService.getSessionForUser(session, user)
-
-	err = json.NewEncoder(w).Encode(session)
+	err = json.NewEncoder(w).Encode(sessionToReturn)
 	if err != nil {
 		app.serverError(w, err)
 		return
