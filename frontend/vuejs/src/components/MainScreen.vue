@@ -26,6 +26,7 @@
                     baseURL: this.backendUrl,
                 })
                     .then(response => {
+                        //TODO avoid mutating props directly
                         this.sessionId = response.data.id
                     })
                     .catch(error => {
