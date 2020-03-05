@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -17,5 +18,6 @@ func (app *Application) routes() http.Handler {
 	topMux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
 	//TODO use alice middleware?
-	return app.logRequest(app.authorization(topMux))
+	corsObj := handlers.AllowedOrigins([]string{"*"})
+	return handlers.CORS(corsObj)(app.logRequest(app.authorization(topMux)))
 }
