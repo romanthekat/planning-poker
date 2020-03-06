@@ -27,6 +27,12 @@
 
             <input v-model="vote">
             <button v-on:click="voteInSession">Vote</button>
+
+            <ul id="example-1">
+                <li v-for="item in Object.entries(this.session.votes_info)" :key="item.message">
+                    {{item[0]}}:{{item[1]}}
+                </li>
+            </ul>
         </template>
     </div>
 </template>
