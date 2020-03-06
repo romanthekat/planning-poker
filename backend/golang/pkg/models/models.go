@@ -12,10 +12,11 @@ type UserId int
 
 //Session
 type Session struct {
-	Id          SessionId          `json:"id"`
-	Users       map[UserId]*User   `json:"users"`
-	Votes       map[UserId]float32 `json:"votes"`
-	VotesHidden bool               `json:"votes_hidden"`
+	Id          SessionId           `json:"id"`
+	Users       map[UserId]*User    `json:"users"`
+	Votes       map[UserId]*float32 `json:"-"`
+	VotesInfo   map[string]string   `json:"votes_info"`
+	VotesHidden bool                `json:"votes_hidden"`
 	LastActive  time.Time
 }
 

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"math/rand"
 	"rgm-planning-poker/pkg/models"
 	"sync"
@@ -38,7 +39,7 @@ func (s SessionService) Vote(session *models.Session, vote *models.Vote) error {
 		return models.ErrNoRecord
 	}
 
-	session.Votes[user.Id] = vote.Vote
+	session.Votes[user.Id] = &vote.Vote
 
 	return nil
 }
@@ -73,9 +74,28 @@ func (s SessionService) Get(id models.SessionId) (*models.Session, error) {
 	return session, err
 }
 
-func (s SessionService) GetMaskedSessionForUser(session *models.Session, id models.UserId) *models.Session {
-	//TODO impl
+func (s SessionService) GetMaskedSessionForUser(session models.Session, userId models.UserId) models.Session {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	votesInfo := make(map[string]string)
+	for votedUserId, vote := range session.Votes {
+		name := session.Users[votedUserId].Name
+		votesInfo[name] = getVoteToShow(vote, session.VotesHidden, votedUserId == userId)
+	}
+
+	session.VotesInfo = votesInfo
 	return session
+}
+
+func getVoteToShow(vote *float32, votesHidden bool, sameUser bool) string {
+	if sameUser || !votesHidden {
+		return fmt.Sprintf("%.2f", *vote)
+	} else if vote != nil {
+		return "+"
+	} else {
+		return "-"
+	}
 }
 
 func GenerateRandomId() int {
