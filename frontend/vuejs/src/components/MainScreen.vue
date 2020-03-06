@@ -2,6 +2,10 @@
     <div class="main">
         <template v-if="sessionId === ''">
             <button v-on:click="createSession">Create Session</button>
+            <label>
+                or join by id:
+                <input v-model.lazy="sessionId">
+            </label>
         </template>
         <template v-if="sessionId !== '' && userId === ''">
             <label>
@@ -18,6 +22,9 @@
             <button v-on:click="joinSession">Join Session</button>
         </template>
         <template v-if="sessionId !== '' && userId !== '' && session !== null">
+            <label>Session id: {{sessionId}}</label>
+            <br>
+
             <input v-model="vote">
             <button v-on:click="voteInSession">Vote</button>
         </template>
