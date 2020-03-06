@@ -1,5 +1,5 @@
 <template>
-    <div class="hello">
+    <div class="main">
         <template v-if="sessionId == null">
             <button v-on:click="createSession">Create Session</button>
         </template>
@@ -16,13 +16,13 @@
         name: 'MainScreen',
         props: {
             backendUrl: String,
-            sessionId: String
+            sessionId: String,
         },
         methods: {
             createSession() {
                 axios({
                     method: 'post',
-                    url: '/createSession',
+                    url: '/sessions',
                     baseURL: this.backendUrl,
                 })
                     .then(response => {
