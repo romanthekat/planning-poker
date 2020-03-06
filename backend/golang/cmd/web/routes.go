@@ -9,10 +9,10 @@ import (
 func (app *Application) routes() http.Handler {
 	topMux := mux.NewRouter()
 
-	topMux.HandleFunc("/api/createSession", app.createSession)
-	topMux.HandleFunc("/api/{sessionId}/get/{userId}", app.getSession)
-	topMux.HandleFunc("/api/{sessionId}/join", app.joinSession)
-	topMux.HandleFunc("/api/{sessionId}/vote", app.vote)
+	topMux.HandleFunc("/api/sessions", app.createSession)
+	topMux.HandleFunc("/api/sessions/{sessionId}/get/{userId}", app.getSession)
+	topMux.HandleFunc("/api/sessions/{sessionId}/join", app.joinSession)
+	topMux.HandleFunc("/api/sessions/{sessionId}/vote", app.vote)
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	topMux.Handle("/static/", http.StripPrefix("/static", fileServer))

@@ -4,12 +4,12 @@
 
 [source]
 ----
-POST localhost:10080/api/createSession
+POST localhost:10080/api/sessions
 ----
 
 [source]
 ----
-POST localhost:10080/api/SESSION_ID/join
+POST localhost:10080/api/sessions/SESSION_ID/join
 Content-Type: application/json
 {
     "name": "Roman"
@@ -18,12 +18,12 @@ Content-Type: application/json
 
 [source]
 ----
-GET localhost:10080/api/SESSION_ID/get/USER_ID
+GET localhost:10080/api/sessions/SESSION_ID/get/USER_ID
 ----
 
 [source]
 ----
-POST localhost:10080/api/SESSION_ID/vote
+POST localhost:10080/api/sessions/SESSION_ID/vote
 Content-Type: application/json
 {
     "user_id": USER_ID,
