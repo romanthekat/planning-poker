@@ -28,10 +28,23 @@
             <input v-model="vote">
             <button v-on:click="voteInSession">Vote</button>
 
+            <table>
+                <thead>
+                <tr>
+                    <th>name</th>
+                    <th>vote</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="item in Object.entries(this.session.votes_info)" :key="item.message">
+                    <td>{{item[0]}}</td>
+                    <td>{{item[1]}}</td>
+                </tr>
+                </tbody>
+            </table>
+
             <ul id="example-1">
-                <li v-for="item in Object.entries(this.session.votes_info)" :key="item.message">
-                    {{item[0]}}:{{item[1]}}
-                </li>
+
             </ul>
         </template>
     </div>
@@ -120,6 +133,7 @@
                     }
                 )
                     .then(() => {
+                        this.fetchSession()
                     })
                     .catch(error => {
                         console.log(error);
