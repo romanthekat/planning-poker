@@ -1,10 +1,25 @@
 <template>
     <div class="main">
-        <template v-if="sessionId == null">
+        <template v-if="sessionId === ''">
             <button v-on:click="createSession">Create Session</button>
         </template>
-        <template v-else>
-            <label>session id: {{ sessionId }}</label>
+        <template v-if="sessionId !== '' && userId === ''">
+            <label>
+                Type name:
+                <input v-model="name">
+            </label>
+            <button v-on:click="joinSession">Join Session</button>
+        </template>
+        <template v-if="sessionId !== '' && userId !== '' && session === null">
+            <label>
+                Type name:
+                <input v-model="name">
+            </label>
+            <button v-on:click="joinSession">Join Session</button>
+        </template>
+        <template v-if="sessionId !== '' && userId !== '' && session !== null">
+            <input v-model="vote">
+            <button v-on:click="voteInSession">Vote</button>
         </template>
     </div>
 </template>
@@ -16,18 +31,82 @@
         name: 'MainScreen',
         props: {
             backendUrl: String,
-            sessionId: String,
+
         },
+        data() {
+            return {
+                sessionId: '',
+                name: '',
+                userId: '',
+                timer: '',
+                session: {},
+                vote: 0.0
+            }
+        },
+        created() {
+            this.interval = setInterval(this.fetchSession, 1000)
+        },
+        beforeDestroy() {
+            clearInterval(this.interval)
+        },
+
         methods: {
+            fetchSession() {
+                if (this.userId !== '') {
+                    axios({
+                        method: 'get',
+                        baseURL: this.backendUrl,
+                        url: '/sessions/' + this.sessionId + '/get/' + this.userId,
+                    })
+                        .then(response => {
+                            this.session = response.data
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                }
+            },
+            beforeDestroy() {
+                clearInterval(this.timer)
+            },
+
             createSession() {
                 axios({
                     method: 'post',
-                    url: '/sessions',
                     baseURL: this.backendUrl,
+                    url: '/sessions',
                 })
                     .then(response => {
-                        //TODO avoid mutating props directly
                         this.sessionId = response.data.id
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            },
+            joinSession() {
+                axios({
+                        method: 'post',
+                        baseURL: this.backendUrl,
+                        url: '/sessions/' + this.sessionId + '/join',
+                        data: JSON.stringify({name: this.name}),
+                    }
+                )
+                    .then(response => {
+                        this.userId = response.data.id
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            },
+            voteInSession() {
+                axios({
+                        method: 'post',
+                        baseURL: this.backendUrl,
+                        url: '/sessions/' + this.sessionId + '/vote',
+                        data: JSON.stringify({user_id: this.userId, vote: parseFloat(this.vote)}),
+                    }
+                )
+                    .then(() => {
                     })
                     .catch(error => {
                         console.log(error);
