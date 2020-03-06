@@ -49,7 +49,7 @@ func (app *Application) getSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.infoLog.Printf("get session %v for user %+v", sessionId, userId)
-	sessionToReturn := app.sessionService.GetMaskedSessionForUser(session, userId)
+	sessionToReturn := app.sessionService.GetMaskedSessionForUser(*session, userId)
 
 	err = json.NewEncoder(w).Encode(sessionToReturn)
 	if err != nil {

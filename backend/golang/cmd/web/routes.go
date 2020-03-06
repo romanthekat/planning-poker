@@ -18,6 +18,9 @@ func (app *Application) routes() http.Handler {
 	topMux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
 	//TODO use alice middleware?
-	corsObj := handlers.AllowedOrigins([]string{"*"})
-	return handlers.CORS(corsObj)(app.logRequest(app.authorization(topMux)))
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With, Content-Type, Authorization"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+
+	return app.logRequest(handlers.CORS(headersOk, originsOk, methodsOk)(topMux))
 }
