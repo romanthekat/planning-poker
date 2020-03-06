@@ -42,10 +42,6 @@
                 </tr>
                 </tbody>
             </table>
-
-            <ul id="example-1">
-
-            </ul>
         </template>
     </div>
 </template>
