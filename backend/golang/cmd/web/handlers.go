@@ -72,14 +72,12 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := app.sessionService.Get(sessionId)
+	app.infoLog.Printf("join session %v for user %+v", sessionId, user)
+	user, err = app.sessionService.JoinSession(sessionId, user)
 	if err != nil {
-		app.clientError(w, http.StatusNotFound)
+		app.serverError(w, err)
 		return
 	}
-
-	app.infoLog.Printf("join session %v for user %+v", sessionId, user)
-	user = app.sessionService.JoinSession(session, user)
 
 	err = json.NewEncoder(w).Encode(user)
 	if err != nil {
@@ -102,14 +100,8 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := app.sessionService.Get(sessionId)
-	if err != nil {
-		app.clientError(w, http.StatusNotFound)
-		return
-	}
-
 	app.infoLog.Printf("vote %+v in session %v", vote, sessionId)
-	err = app.sessionService.Vote(session, vote)
+	err = app.sessionService.Vote(sessionId, vote)
 	if err != nil {
 		app.clientError(w, http.StatusNotFound)
 		return
@@ -118,6 +110,34 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(vote)
 	if err != nil {
 		app.serverError(w, err)
+		return
+	}
+}
+
+func (app *Application) show(w http.ResponseWriter, r *http.Request) {
+	sessionId, err := getSessionId(r)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	err = app.sessionService.Show(sessionId)
+	if err != nil {
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
+}
+
+func (app *Application) clear(w http.ResponseWriter, r *http.Request) {
+	sessionId, err := getSessionId(r)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	err = app.sessionService.Clear(sessionId)
+	if err != nil {
+		app.clientError(w, http.StatusNotFound)
 		return
 	}
 }

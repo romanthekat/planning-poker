@@ -19,20 +19,30 @@ func NewSessionService(sessions models.SessionModel) *SessionService {
 	return &SessionService{sessions, &sync.Mutex{}}
 }
 
-func (s SessionService) JoinSession(session *models.Session, user *models.User) *models.User {
+func (s SessionService) JoinSession(sessionId models.SessionId, user *models.User) (*models.User, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+
+	session, err := s.Get(sessionId)
+	if err != nil {
+		return nil, err
+	}
 
 	user.Id = models.UserId(GenerateRandomId())
 
 	session.Users[user.Id] = user
 
-	return user
+	return user, nil
 }
 
-func (s SessionService) Vote(session *models.Session, vote *models.Vote) error {
+func (s SessionService) Vote(sessionId models.SessionId, vote *models.Vote) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+
+	session, err := s.Get(sessionId)
+	if err != nil {
+		return err
+	}
 
 	user, ok := session.Users[vote.UserId]
 	if !ok {
@@ -44,13 +54,20 @@ func (s SessionService) Vote(session *models.Session, vote *models.Vote) error {
 	return nil
 }
 
-func (s SessionService) Clear(session *models.Session) {
+func (s SessionService) Clear(sessionId models.SessionId) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+
+	session, err := s.Get(sessionId)
+	if err != nil {
+		return err
+	}
 
 	for v := range session.Votes {
 		delete(session.Votes, v)
 	}
+
+	return nil
 }
 
 func (s SessionService) Create() (*models.Session, error) {
@@ -86,6 +103,20 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 
 	session.VotesInfo = votesInfo
 	return session
+}
+
+func (s SessionService) Show(sessionId models.SessionId) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	session, err := s.sessions.Get(sessionId)
+	if err != nil {
+		return err
+	}
+
+	session.VotesHidden = false
+
+	return nil
 }
 
 func getVoteToShow(vote *float32, votesHidden bool, sameUser bool) string {
