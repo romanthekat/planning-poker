@@ -1,27 +1,27 @@
 <template>
     <div class="main">
-        <template v-if="sessionId === ''">
+        <template v-if="sessionId == null">
             <button v-on:click="createSession">Create Session</button>
             <label>
                 or join by id:
                 <input v-model.lazy="sessionId">
             </label>
         </template>
-        <template v-if="sessionId !== '' && userId === ''">
+        <template v-if="sessionId != null && userId === ''">
             <label>
                 Type name:
                 <input v-model="name">
             </label>
             <button v-on:click="joinSession">Join Session</button>
         </template>
-        <template v-if="sessionId !== '' && userId !== '' && session === null">
+        <template v-if="sessionId != null && userId !== '' && session === null">
             <label>
                 Type name:
                 <input v-model="name">
             </label>
             <button v-on:click="joinSession">Join Session</button>
         </template>
-        <template v-if="sessionId !== '' && userId !== '' && session !== null">
+        <template v-if="sessionId != null && userId !== '' && session !== null">
             <button class='vote-btn' v-on:click="voteInSession(1)">1</button>
             <button class='vote-btn' v-on:click="voteInSession(2)">2</button>
             <button class='vote-btn' v-on:click="voteInSession(3)">3</button>
