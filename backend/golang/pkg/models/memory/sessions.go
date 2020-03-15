@@ -69,6 +69,7 @@ func (s SessionModel) Create() (*models.Session, error) {
 		Id:          id,
 		Users:       make(map[models.UserId]*models.User),
 		Votes:       make(map[models.UserId]*float32),
+		VotesInfo:   map[string]string{},
 		VotesHidden: true,
 		LastActive:  time.Now(),
 	}
