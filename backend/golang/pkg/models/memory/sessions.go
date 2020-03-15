@@ -53,6 +53,7 @@ func removeExpiredUsers(sessionModel *SessionModel) {
 				if time.Now().Sub(user.LastActive).Seconds() > UserExpirationSec {
 					delete(session.Users, user.Id)
 					delete(session.Votes, user.Id)
+					//TODO check whether session must be shown
 				}
 			}
 		}
