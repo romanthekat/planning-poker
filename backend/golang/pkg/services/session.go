@@ -84,9 +84,6 @@ func (s SessionService) Create() (*models.Session, error) {
 }
 
 func (s SessionService) Get(id models.SessionId) (*models.Session, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	session, err := s.sessions.Get(id)
 	if err != nil {
 		return nil, err
