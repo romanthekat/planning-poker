@@ -100,9 +100,11 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 	defer s.mutex.Unlock()
 
 	votesInfo := make(map[string]string)
-	for votedUserId, vote := range session.Votes {
-		name := session.Users[votedUserId].Name
-		votesInfo[name] = getVoteToShow(vote, session.VotesHidden, votedUserId == userId)
+
+	for displayUserId, user := range session.Users {
+		name := user.Name
+		userVote := session.Votes[displayUserId]
+		votesInfo[name] = getVoteToShow(userVote, session.VotesHidden, displayUserId == userId)
 	}
 
 	session.VotesInfo = votesInfo
@@ -124,12 +126,12 @@ func (s SessionService) Show(sessionId models.SessionId) error {
 }
 
 func getVoteToShow(vote *float32, votesHidden bool, sameUser bool) string {
-	if sameUser || !votesHidden {
-		return fmt.Sprintf("%.2f", *vote)
-	} else if vote != nil {
-		return "+"
-	} else {
+	if vote == nil {
 		return "-"
+	} else if sameUser || !votesHidden {
+		return fmt.Sprintf("%.2f", *vote)
+	} else {
+		return "+"
 	}
 }
 
