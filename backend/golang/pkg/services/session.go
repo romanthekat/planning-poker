@@ -51,6 +51,10 @@ func (s SessionService) Vote(sessionId models.SessionId, vote *models.Vote) erro
 
 	session.Votes[user.Id] = &vote.Vote
 
+	if len(session.Votes) == len(session.Users) {
+		session.VotesHidden = false
+	}
+
 	return nil
 }
 
@@ -66,6 +70,8 @@ func (s SessionService) Clear(sessionId models.SessionId) error {
 	for v := range session.Votes {
 		delete(session.Votes, v)
 	}
+
+	session.VotesHidden = true
 
 	return nil
 }
