@@ -99,6 +99,11 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
+	user, ok := session.Users[userId]
+	if ok {
+		user.LastActive = time.Now()
+	}
+
 	votesInfo := make(map[string]string)
 
 	for displayUserId, user := range session.Users {
