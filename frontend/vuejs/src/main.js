@@ -9,15 +9,15 @@ Vue.config.productionTip = false
 
 
 const routes = [
-  { path: '/', component: App },
-  { path: '/:sessionId', props: true, component: App },
+    {path: '/', component: App},
+    {path: '/:sessionId', props: true, component: App},
 ]
 
 const router = new VueRouter({
-  routes // short for `routes: routes`
+    routes // short for `routes: routes`
 })
 
 new Vue({
-  render: h => h(App),
-  router: router,
+    render: h => h(App),
+    router: router,
 }).$mount('#app')

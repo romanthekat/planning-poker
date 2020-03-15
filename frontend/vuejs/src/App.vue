@@ -20,6 +20,9 @@
                 userName: null
             }
         },
+        created () {
+            document.title = "=^_^= scrum planning";
+        }
     }
 </script>
 
