@@ -31,6 +31,7 @@ func (s SessionService) JoinSession(sessionId models.SessionId, user *models.Use
 	user.Id = models.UserId(GenerateRandomId())
 
 	session.Users[user.Id] = user
+	session.VotesHidden = true
 
 	return user, nil
 }

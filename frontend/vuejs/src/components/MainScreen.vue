@@ -22,11 +22,17 @@
             <button v-on:click="joinSession">Join Session</button>
         </template>
         <template v-if="sessionId !== '' && userId !== '' && session !== null">
-            <label>Session id: {{sessionId}}</label>
-            <br>
+            <button class='vote-btn' v-on:click="voteInSession(1)">1</button>
+            <button class='vote-btn' v-on:click="voteInSession(2)">2</button>
+            <button class='vote-btn' v-on:click="voteInSession(3)">3</button>
+            <button class='vote-btn' v-on:click="voteInSession(5)">5</button>
+            <button class='vote-btn' v-on:click="voteInSession(8)">8</button>
+            <button class='vote-btn' v-on:click="voteInSession(13)">13</button>
+            <button class='vote-btn' v-on:click="voteInSession(20)">20</button>
 
-            <input v-model="vote">
-            <button v-on:click="voteInSession">Vote</button>
+            <br>
+            <button class='clear-btn' v-on:click="clearVotes">Clear votes</button>
+            <button class='show-votes-btn' v-on:click="showVotes">Show votes</button>
 
             <table>
                 <thead>
@@ -53,11 +59,10 @@
         name: 'MainScreen',
         props: {
             backendUrl: String,
-
+            sessionId: Number,
         },
         data() {
             return {
-                sessionId: '',
                 name: '',
                 userId: '',
                 timer: '',
@@ -65,6 +70,7 @@
                 vote: 0.0
             }
         },
+
         created() {
             this.interval = setInterval(this.fetchSession, 1000)
         },
@@ -100,6 +106,7 @@
                 })
                     .then(response => {
                         this.sessionId = response.data.id
+                        this.$router.push('/' + this.sessionId)
                     })
                     .catch(error => {
                         console.log(error);
@@ -120,12 +127,44 @@
                         console.log(error);
                     });
             },
-            voteInSession() {
+            voteInSession(vote) {
+                this.vote = vote
+
                 axios({
                         method: 'post',
                         baseURL: this.backendUrl,
                         url: '/sessions/' + this.sessionId + '/vote',
-                        data: JSON.stringify({user_id: this.userId, vote: parseFloat(this.vote)}),
+                        data: JSON.stringify({user_id: this.userId, vote: parseFloat(vote)}),
+                    }
+                )
+                    .then(() => {
+                        this.fetchSession()
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            },
+            clearVotes() {
+                axios({
+                        method: 'post',
+                        baseURL: this.backendUrl,
+                        url: '/sessions/' + this.sessionId + '/clear',
+                        data: JSON.stringify({user_id: this.userId}),
+                    }
+                )
+                    .then(() => {
+                        this.fetchSession()
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            },
+            showVotes() {
+                axios({
+                        method: 'post',
+                        baseURL: this.backendUrl,
+                        url: '/sessions/' + this.sessionId + '/show',
+                        data: JSON.stringify({user_id: this.userId}),
                     }
                 )
                     .then(() => {

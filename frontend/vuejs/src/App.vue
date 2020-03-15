@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <MainScreen :backend-url="backendUrl"/>
+        <MainScreen v-bind:backend-url="backendUrl" v-bind:session-id="sessionId"/>
     </div>
 </template>
 
@@ -15,7 +15,7 @@
         data() {
             return {
                 backendUrl: "http://127.0.0.1:10080/api",
-                sessionId: null,
+                sessionId: this.$route.params.sessionId,
                 userId: null,
                 userName: null
             }
