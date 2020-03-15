@@ -15,11 +15,11 @@
         data() {
             return {
                 backendUrl: "http://127.0.0.1:10080/api",
-                sessionId: this.$route.params.sessionId,
+                sessionId: parseInt(this.$route.params.sessionId) || null,
                 userId: null,
                 userName: null
             }
-        }
+        },
     }
 </script>
 
