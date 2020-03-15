@@ -215,4 +215,8 @@
     a {
         color: #42b983;
     }
+
+    table {
+        align: left
+    }
 </style>
