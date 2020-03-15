@@ -15,6 +15,7 @@ func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	app.infoLog.Println("creating new session")
 	session, err := app.sessionService.Create()
 	if err != nil {
 		app.serverError(w, err)
