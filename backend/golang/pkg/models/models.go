@@ -23,7 +23,7 @@ type Session struct {
 type User struct {
 	Id         UserId `json:"id"`
 	Name       string `json:"name"`
-	lastActive time.Time
+	LastActive time.Time
 }
 
 type Vote struct {

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"rgm-planning-poker/pkg/models"
 	"strconv"
+	"time"
 )
 
 func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
@@ -66,6 +67,8 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		app.errorLog.Println(err)
 		return
 	}
+
+	user.LastActive = time.Now()
 
 	sessionId, err := getSessionId(r)
 	if err != nil {

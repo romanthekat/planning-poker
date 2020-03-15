@@ -8,6 +8,7 @@ import (
 )
 
 const SessionExpirationMin = 42.0
+const UserExpirationSec = 7.0
 
 type SessionModel struct {
 	sessions map[models.SessionId]*models.Session
@@ -18,6 +19,7 @@ func NewSessionModel() *SessionModel {
 	sessionModel := &SessionModel{make(map[models.SessionId]*models.Session), &sync.Mutex{}}
 
 	go removeExpiredSessions(sessionModel)
+	go removeExpiredUsers(sessionModel)
 
 	return sessionModel
 }
@@ -32,6 +34,26 @@ func removeExpiredSessions(sessionModel *SessionModel) {
 		for _, session := range sessionModel.sessions {
 			if time.Now().Sub(session.LastActive).Minutes() > SessionExpirationMin {
 				delete(sessionModel.sessions, session.Id)
+			}
+		}
+
+		sessionModel.mutex.Unlock()
+	}
+}
+
+func removeExpiredUsers(sessionModel *SessionModel) {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		sessionModel.mutex.Lock()
+
+		for _, session := range sessionModel.sessions {
+			for _, user := range session.Users {
+				if time.Now().Sub(user.LastActive).Seconds() > UserExpirationSec {
+					delete(session.Users, user.Id)
+					delete(session.Votes, user.Id)
+				}
 			}
 		}
 
