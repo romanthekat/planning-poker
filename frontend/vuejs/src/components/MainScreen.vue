@@ -92,8 +92,12 @@
                 let total = 0;
                 let count = 0;
                 for (let key in this.session.votes_info) {
-                    total += parseInt(this.session.votes_info[key])
-                    count++;
+                    let vote = parseInt(this.session.votes_info[key])
+
+                    if (!isNaN(vote)) {
+                        total += vote;
+                        count++;
+                    }
                 }
                 return total / count;
             },
