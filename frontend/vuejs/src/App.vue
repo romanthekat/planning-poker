@@ -14,7 +14,7 @@
         },
         data() {
             return {
-                backendUrl: "http://127.0.0.1:10080/api",
+                backendUrl: process.env.VUE_APP_BACKEND_URL,
                 sessionId: parseInt(this.$route.params.sessionId) || null,
                 userId: null,
                 userName: null
