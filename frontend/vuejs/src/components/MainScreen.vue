@@ -43,9 +43,9 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in Object.entries(this.session.votes_info)" :key="item.message">
-                        <td>{{item[0]}}</td>
-                        <td>{{item[1]}}</td>
+                    <tr v-for="vote in session.votes_info" :key="vote.name">
+                        <td>{{vote.name}}</td>
+                        <td>{{vote.vote}}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -91,9 +91,10 @@
             averageVote() {
                 let total = 0;
                 let count = 0;
-                for (let key in this.session.votes_info) {
-                    let vote = parseInt(this.session.votes_info[key])
-
+                for (var i = 0; i < this.session.votes_info.length; i++) {
+                    let voteInfo = this.session.votes_info[i];
+                    
+                    let vote = parseInt(voteInfo.vote);
                     if (!isNaN(vote)) {
                         total += vote;
                         count++;
