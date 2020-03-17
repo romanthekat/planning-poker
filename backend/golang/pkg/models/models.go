@@ -36,6 +36,20 @@ type VoteInfo struct {
 	Vote string `json:"vote"`
 }
 
+type VotesInfoByName []VoteInfo
+
+func (v VotesInfoByName) Len() int {
+	return len(v)
+}
+
+func (v VotesInfoByName) Less(i, j int) bool {
+	return v[i].Name < v[j].Name
+}
+
+func (v VotesInfoByName) Swap(i, j int) {
+	v[i], v[j] = v[j], v[i]
+}
+
 //SessionModel defines model/DAO methods for Session
 type SessionModel interface {
 	Create() (*Session, error)
