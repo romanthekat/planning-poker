@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"rgm-planning-poker/pkg/models"
+	"sort"
 	"sync"
 	"time"
 )
@@ -114,6 +115,7 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 		})
 	}
 
+	sort.Sort(models.VotesInfoByName(votesInfo))
 	session.VotesInfo = votesInfo
 	return session
 }
