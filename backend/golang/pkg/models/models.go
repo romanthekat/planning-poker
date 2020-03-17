@@ -13,7 +13,7 @@ type UserId int
 //Session
 type Session struct {
 	Id          SessionId           `json:"id"`
-	Users       map[UserId]*User    `json:"users"`
+	Users       map[UserId]*User    `json:"-"`
 	Votes       map[UserId]*float32 `json:"-"`
 	VotesInfo   []VoteInfo          `json:"votes_info"`
 	VotesHidden bool                `json:"votes_hidden"`
