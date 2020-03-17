@@ -104,12 +104,14 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 		user.LastActive = time.Now()
 	}
 
-	votesInfo := make(map[string]string)
+	var votesInfo []models.VoteInfo
 
 	for displayUserId, user := range session.Users {
-		name := user.Name
 		userVote := session.Votes[displayUserId]
-		votesInfo[name] = getVoteToShow(userVote, session.VotesHidden, displayUserId == userId)
+		votesInfo = append(votesInfo, models.VoteInfo{
+			Name: user.Name,
+			Vote: getVoteToShow(userVote, session.VotesHidden, displayUserId == userId),
+		})
 	}
 
 	session.VotesInfo = votesInfo
