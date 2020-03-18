@@ -21,9 +21,10 @@ type Session struct {
 }
 
 type User struct {
-	Id         UserId `json:"id"`
-	Name       string `json:"name"`
-	LastActive time.Time
+	Id         UserId    `json:"id"`
+	Name       string    `json:"name"`
+	LastActive time.Time `json:"last_active"`
+	Active     bool      `json:"active"`
 }
 
 type Vote struct {

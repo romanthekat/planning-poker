@@ -19,7 +19,7 @@ func NewSessionModel() *SessionModel {
 	sessionModel := &SessionModel{make(map[models.SessionId]*models.Session), &sync.Mutex{}}
 
 	go removeExpiredSessions(sessionModel)
-	go removeExpiredUsers(sessionModel)
+	go expireUsers(sessionModel)
 
 	return sessionModel
 }
@@ -41,7 +41,7 @@ func removeExpiredSessions(sessionModel *SessionModel) {
 	}
 }
 
-func removeExpiredUsers(sessionModel *SessionModel) {
+func expireUsers(sessionModel *SessionModel) {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
@@ -51,7 +51,7 @@ func removeExpiredUsers(sessionModel *SessionModel) {
 		for _, session := range sessionModel.sessions {
 			for _, user := range session.Users {
 				if time.Now().Sub(user.LastActive).Seconds() > UserExpirationSec {
-					delete(session.Users, user.Id)
+					user.Active = false
 					delete(session.Votes, user.Id)
 					//TODO check whether session must be shown
 				}

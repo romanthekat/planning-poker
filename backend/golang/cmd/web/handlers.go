@@ -69,6 +69,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.LastActive = time.Now()
+	user.Active = true
 
 	sessionId, err := getSessionId(r)
 	if err != nil {
