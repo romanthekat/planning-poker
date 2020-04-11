@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"html"
 	"math/rand"
 	"rgm-planning-poker/pkg/models"
 	"sort"
@@ -53,7 +54,22 @@ func (s SessionService) Vote(sessionId models.SessionId, vote *models.Vote) erro
 
 	session.Votes[user.Id] = &vote.Vote
 
-	if len(session.Votes) == len(session.Users) {
+	//TODO that's ugly and needs tests
+	activeUsersCount := 0
+	for _, user := range session.Users {
+		if user.Active {
+			activeUsersCount++
+		}
+	}
+
+	activeUsersVotesCount := 0
+	for userId := range session.Votes {
+		if session.Users[userId].Active {
+			activeUsersVotesCount++
+		}
+	}
+
+	if activeUsersVotesCount == activeUsersCount {
 		session.VotesHidden = false
 	}
 
