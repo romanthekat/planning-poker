@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"html"
 	"math/rand"
 	"rgm-planning-poker/pkg/models"
@@ -130,10 +129,16 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 		}
 
 		userVote := session.Votes[displayUserId]
-		votesInfo = append(votesInfo, models.VoteInfo{
-			Name: html.EscapeString(user.Name),
-			Vote: getVoteToShow(userVote, session.VotesHidden, displayUserId == userId),
-		})
+		isCurrentUser := displayUserId == userId
+
+		voteInfo := models.VoteInfo{
+			Name:        html.EscapeString(user.Name),
+			Voted:       userVote != nil,
+			Vote:        getVoteToShow(userVote, session.VotesHidden, isCurrentUser),
+			CurrentUser: isCurrentUser,
+		}
+
+		votesInfo = append(votesInfo, voteInfo)
 	}
 
 	sort.Sort(models.VotesInfoByName(votesInfo))
@@ -155,13 +160,11 @@ func (s SessionService) Show(sessionId models.SessionId) error {
 	return nil
 }
 
-func getVoteToShow(vote *float32, votesHidden bool, sameUser bool) string {
-	if vote == nil {
-		return "-"
-	} else if sameUser || !votesHidden {
-		return fmt.Sprintf("%.2f", *vote)
+func getVoteToShow(vote *float32, votesHidden bool, sameUser bool) *float32 {
+	if sameUser || !votesHidden {
+		return vote
 	} else {
-		return "+"
+		return nil
 	}
 }
 
