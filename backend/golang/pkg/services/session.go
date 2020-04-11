@@ -115,7 +115,7 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 
 		userVote := session.Votes[displayUserId]
 		votesInfo = append(votesInfo, models.VoteInfo{
-			Name: user.Name,
+			Name: html.EscapeString(user.Name),
 			Vote: getVoteToShow(userVote, session.VotesHidden, displayUserId == userId),
 		})
 	}
