@@ -33,8 +33,10 @@ type Vote struct {
 }
 
 type VoteInfo struct {
-	Name string `json:"name"`
-	Vote string `json:"vote"`
+	Name        string   `json:"name"`
+	Voted       bool     `json:"is_voted"`
+	Vote        *float32 `json:"vote"`
+	CurrentUser bool     `json:"is_current_user"`
 }
 
 type VotesInfoByName []VoteInfo

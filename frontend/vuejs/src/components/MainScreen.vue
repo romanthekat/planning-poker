@@ -44,8 +44,18 @@
                     </thead>
                     <tbody>
                     <tr v-for="vote in session.votes_info" :key="vote.name">
-                        <td>{{vote.name}}</td>
-                        <td>{{vote.vote}}</td>
+                        <td v-bind:class="{ currentUser: vote.is_current_user}">{{vote.name}}</td>
+                        <template v-if="vote.is_voted">
+                            <template v-if="vote.vote !== null">
+                                <td>{{vote.vote}}</td>
+                            </template>
+                            <template v-else>
+                                <td>Voted</td>
+                            </template>
+                        </template>
+                        <template v-else>
+                            <td>No vote</td>
+                        </template>
                     </tr>
                     </tbody>
                 </table>
@@ -93,7 +103,7 @@
                 let count = 0;
                 for (var i = 0; i < this.session.votes_info.length; i++) {
                     let voteInfo = this.session.votes_info[i];
-                    
+
                     let vote = parseInt(voteInfo.vote);
                     if (!isNaN(vote)) {
                         total += vote;
@@ -208,6 +218,10 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+    .currentUser {
+        font-weight: bold;
+    }
+
     h3 {
         margin: 40px 0 0;
     }
