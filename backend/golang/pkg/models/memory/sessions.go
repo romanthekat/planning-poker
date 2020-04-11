@@ -52,8 +52,7 @@ func expireUsers(sessionModel *SessionModel) {
 			for _, user := range session.Users {
 				if time.Now().Sub(user.LastActive).Seconds() > UserExpirationSec {
 					user.Active = false
-					delete(session.Votes, user.Id)
-					//TODO check whether session must be shown
+					//TODO check whether session votes must be shown/all active users voted
 				}
 			}
 		}
