@@ -43,8 +43,9 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="vote in session.votes_info" :key="vote.name">
-                        <td v-bind:class="{ currentUser: vote.is_current_user}">{{vote.name}}</td>
+                    <tr v-bind:class="{ currentUser: vote.is_current_user}"
+                        v-for="vote in session.votes_info" :key="vote.name">
+                        <td>{{vote.name}}</td>
                         <template v-if="vote.is_voted">
                             <template v-if="vote.vote !== null">
                                 <td>{{vote.vote}}</td>
