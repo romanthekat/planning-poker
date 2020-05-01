@@ -1,9 +1,9 @@
 package services
 
 import (
+	"github.com/EvilKhaosKat/planning-poker/pkg/models"
 	"html"
 	"math/rand"
-	"rgm-planning-poker/pkg/models"
 	"sort"
 	"sync"
 	"time"

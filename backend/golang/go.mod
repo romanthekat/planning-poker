@@ -1,4 +1,4 @@
-module rgm-planning-poker
+module github.com/EvilKhaosKat/planning-poker
 
 go 1.14
 
