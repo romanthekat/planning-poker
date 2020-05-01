@@ -1,8 +1,8 @@
 package memory
 
 import (
+	"github.com/EvilKhaosKat/planning-poker/pkg/models"
 	"math/rand"
-	"rgm-planning-poker/pkg/models"
 	"sync"
 	"time"
 )

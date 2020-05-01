@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/EvilKhaosKat/planning-poker/pkg/models"
 	"github.com/gorilla/mux"
 	"net/http"
-	"rgm-planning-poker/pkg/models"
 	"strconv"
 	"time"
 )

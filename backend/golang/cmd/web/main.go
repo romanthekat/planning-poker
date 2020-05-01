@@ -2,13 +2,13 @@ package main
 
 import (
 	"flag"
+	"github.com/EvilKhaosKat/planning-poker/pkg/models"
+	"github.com/EvilKhaosKat/planning-poker/pkg/models/memory"
+	"github.com/EvilKhaosKat/planning-poker/pkg/services"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
-	"rgm-planning-poker/pkg/models"
-	"rgm-planning-poker/pkg/models/memory"
-	"rgm-planning-poker/pkg/services"
 	"time"
 )
 

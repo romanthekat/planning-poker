@@ -1,5 +1,29 @@
 = planning-poker
 
+image::docs/main.png[]
+
+This is simplistic scrum planning poker application.
+It keeps all data in memory, and expire it after period of inactivity.
+
+Currently, consists of `backend` part (golang) and `frontend` part (vuejs).
+
+== build
+=== backend
+`go build ./cmd/web`
+
+=== frontend
+```
+yarn install
+yarn run serve #run local dev build
+yarn run build #production build
+```
+Local dev build will try to access backend on `http://127.0.0.1:10080/api`.
+
+For production build don't forget to update `.env.production` file's variables `VUE_APP_BACKEND_URL` and `VUE_APP_BASE_URL`.
+
+See also link:frontend/vuejs/README.md[frontend README]
+
+
 == endpoints
 
 [source]
