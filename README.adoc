@@ -1,6 +1,6 @@
 = planning-poker
 
-image::docs/main.png[]
+image::docs/main.jpg[]
 
 This is simplistic scrum planning poker application.
 It keeps all data in memory, and expire it after period of inactivity.
