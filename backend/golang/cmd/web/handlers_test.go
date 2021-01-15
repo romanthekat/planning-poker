@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"github.com/EvilKhaosKat/FaceRecognitionBackend/pkg/models"
 	"github.com/EvilKhaosKat/FaceRecognitionBackend/pkg/models/mock"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
