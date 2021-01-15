@@ -1,0 +1,85 @@
+:root {
+    --main-bg-color: #151515;
+    --primary-grey-blue: #8CB0CB;
+    --primary-dark-grey-blue: #354148;
+    --primary-dark-grey-blue-active: #4A5961;
+}
+
+body {
+    background-color: var(--main-bg-color);
+    color: var(--primary-grey-blue);
+}
+
+.text {
+    color: var(--primary-grey-blue);
+}
+
+label {
+    color: var(--primary-grey-blue);
+}
+
+table {
+    color: var(--primary-grey-blue);
+}
+
+strong {
+    color: var(--primary-grey-blue);
+}
+
+input {
+    background-color: var(--main-bg-color);
+    border-color: var(--primary-grey-blue);
+    color: var(--primary-grey-blue);
+}
+
+.button {
+    color: var(--primary-grey-blue);
+    background-color: var(--primary-dark-grey-blue);
+
+    align-self: center;
+
+    border: #8CB0CB;
+    border-radius: 10px;
+
+    font-size: large;
+
+    padding: 5px 1em;
+    margin: .5em;
+}
+
+.button:active {
+    background-color: var(--primary-dark-grey-blue-active);
+}
+
+.create-button {
+    margin-top: 30%;
+}
+
+.vote-button {
+    border-radius: 5px;
+}
+
+.icon {
+    display: flex;
+    margin-top: 0;
+    position: absolute;
+    left: calc(50% - 24px);
+
+    z-index: -42;
+}
+
+.session-id-input {
+    /*left: 50%;*/
+}
+
+.create-session-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+
+    position: absolute;
+    width: 42%;
+    left: calc(50% - 21%);
+    top: 20%;
+}
