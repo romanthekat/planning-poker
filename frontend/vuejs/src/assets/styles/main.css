@@ -1,8 +1,8 @@
 :root {
-    --background-black: #151515;
     --primary-blue: #8CB0CB;
-    --background-inactive-blue: #354148;
+    --background-black: #151515;
     --background-active-blue: #4A5961;
+    --background-inactive-blue: #354148;
     --voted-green: #33E850;
     --error-red: #D85644;
 }
