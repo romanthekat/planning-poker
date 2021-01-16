@@ -29,9 +29,10 @@ export default {
 <style>
 
 @import './assets/styles/main.css';
+@import url('https://fonts.googleapis.com/css2?family=Aldrich&display=swap');
 
 #app {
-  font-family: Helvetica, Avenir, Arial, sans-serif;
+  font-family: Aldrich, Helvetica, Avenir, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;

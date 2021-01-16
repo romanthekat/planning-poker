@@ -1,40 +1,42 @@
 :root {
-    --main-bg-color: #151515;
-    --primary-grey-blue: #8CB0CB;
-    --primary-dark-grey-blue: #354148;
-    --primary-dark-grey-blue-active: #4A5961;
+    --background-black: #151515;
+    --primary-blue: #8CB0CB;
+    --background-inactive-blue: #354148;
+    --background-active-blue: #4A5961;
+    --voted-green: #33E850;
+    --error-red: #D85644;
 }
 
 body {
-    background-color: var(--main-bg-color);
-    color: var(--primary-grey-blue);
+    background-color: var(--background-black);
+    color: var(--primary-blue);
 }
 
 .text {
-    color: var(--primary-grey-blue);
+    color: var(--primary-blue);
 }
 
 label {
-    color: var(--primary-grey-blue);
+    color: var(--primary-blue);
 }
 
 table {
-    color: var(--primary-grey-blue);
+    color: var(--primary-blue);
 }
 
 strong {
-    color: var(--primary-grey-blue);
+    color: var(--primary-blue);
 }
 
 input {
-    background-color: var(--main-bg-color);
-    border-color: var(--primary-grey-blue);
-    color: var(--primary-grey-blue);
+    background-color: var(--background-black);
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
 }
 
 .button {
-    color: var(--primary-grey-blue);
-    background-color: var(--primary-dark-grey-blue);
+    color: var(--primary-blue);
+    background-color: var(--background-inactive-blue);
 
     align-self: center;
 
@@ -48,7 +50,7 @@ input {
 }
 
 .button:active {
-    background-color: var(--primary-dark-grey-blue-active);
+    background-color: var(--background-active-blue);
 }
 
 .create-button {
@@ -81,5 +83,5 @@ input {
     position: absolute;
     width: 42%;
     left: calc(50% - 21%);
-    top: 20%;
+    top: 10%;
 }
