@@ -1,6 +1,6 @@
 <template>
   <div class="main">
-    <img class="icon" src="@/assets/icon.png">
+    <img class="icon" src="@/assets/icon.svg" width="64px" height="64px">
     <template v-if="!sessionFound()">
       <div class="create-session-container">
         <button class="button create-button" v-on:click="createSession">
