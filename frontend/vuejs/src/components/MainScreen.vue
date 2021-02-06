@@ -53,7 +53,7 @@
 
       <template v-if="session.votes_info !== null && session.votes_info !== undefined">
         <div class="grid-item-members">
-          <div class="members-title text text-regular">{{ getVotedText() }}</div>
+          <div class="members-title text text-regular">{{ getVotedCount() }}/{{ session.votes_info.length }} voted</div>
 
           <div class="members-list">
             <div v-bind:class="{ 'members-list-item': true, 'current-user': vote.is_current_user}"
@@ -149,17 +149,10 @@ export default {
   },
 
   methods: {
-    getVotedText() {
-      let total = this.session.votes_info.length;
-      let voted = 0;
-      for (let i = 0; i < this.session.votes_info.length; i++) {
-        let voteInfo = this.session.votes_info[i];
-        if (voteInfo.is_voted) {
-          voted++
-        }
-      }
-
-      return voted + "/" + total + " voted"
+    getVotedCount() {
+      return this.session.votes_info
+          .filter(vote => vote.is_voted)
+          .length
     },
     sessionFound() {
       return this.sessionId != null && !isNaN(this.sessionId)
