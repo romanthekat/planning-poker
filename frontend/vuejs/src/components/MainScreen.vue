@@ -11,38 +11,44 @@
               </g>
       </svg>
     </div>
-    <template v-if="!sessionFound()">
+    <template v-if="!isSessionFound()">
       <div class="grid-item-main">
         <button class="button button-big" v-on:click="createSession">create</button>
         <div class="text text-regular">or</div>
         <div class="input-container">
           <input type="text" placeholder="session id..." v-model.lazy="sessionId">
-          <button class="button button-big">join</button>
+          <button class="button button-big" v-on:click="this.errorText=null">join</button>
         </div>
-        <div style="display: none" class="error text-regular">session with the id is not found</div>
+        <template v-if="errorText">
+          <div class="error text-regular">session with the id is not found</div>
+        </template>
       </div>
     </template>
 
-    <template v-if="sessionFound() && userId === ''">
+    <template v-if="isSessionFound() && userId === ''">
       <div class="grid-item-main">
         <div class="input-container">
           <input type="text" placeholder="your name..." v-model="name">
           <button class='button button-big' v-on:click="joinSession">join</button>
         </div>
-        <div style="display: none" class="error text-regular">please enter a correct name</div>
+        <template v-if="errorText">
+          <div class="error text-regular">{{ errorText }}</div>
+        </template>
       </div>
     </template>
-    <template v-if="sessionFound() && userId !== '' && session === null">
+    <template v-if="isSessionFound() && userId !== '' && session === null">
       <div class="grid-item-main">
         <div class="input-container">
           <input type="text" placeholder="your name..." v-model="name">
           <button class='button button-big' v-on:click="joinSession">join</button>
         </div>
-        <div style="display: none" class="error text-regular">please enter a correct name</div>
+        <template v-if="errorText">
+          <div class="error text-regular">{{ errorText }}</div>
+        </template>
       </div>
     </template>
 
-    <template v-if="sessionFound() && userId !== '' && session !== null">
+    <template v-if="isSessionFound() && userId !== '' && session !== null">
       <svg display="none">
         <defs>
           <g id="vote-circle">
@@ -80,7 +86,7 @@
         <div class="result-container">
           <div class="result">
             <div class="text text-regular">average</div>
-            <div class="card">{{ averageVote() }}</div>
+            <div class="card">{{ getAverageVote() }}</div>
           </div>
           <div class="text timer">00:00:00</div>
         </div>
@@ -130,6 +136,7 @@ export default {
   props: {
     backendUrl: String,
     sessionId: Number,
+    errorText: String
   },
   data() {
     return {
@@ -154,10 +161,10 @@ export default {
           .filter(vote => vote.is_voted)
           .length
     },
-    sessionFound() {
+    isSessionFound() {
       return this.sessionId != null && !isNaN(this.sessionId)
     },
-    averageVote() {
+    getAverageVote() {
       if (this.session.votes_hidden) {
         return " "
       }
@@ -191,7 +198,8 @@ export default {
               this.session = response.data
             })
             .catch(error => {
-              console.log(error);
+              console.log(error)
+              this.errorText = error.response.data.toString();
             });
       }
     },
@@ -200,6 +208,8 @@ export default {
     },
 
     createSession() {
+      this.errorText = null //TODO it is bad to directly affect props
+
       axios({
         method: 'post',
         baseURL: this.backendUrl,
@@ -211,9 +221,12 @@ export default {
           })
           .catch(error => {
             console.log(error);
+            this.errorText = error.response.data.toString()
           });
     },
     joinSession() {
+      this.errorText = null
+
       axios({
             method: 'post',
             baseURL: this.backendUrl,
@@ -226,6 +239,12 @@ export default {
           })
           .catch(error => {
             console.log(error);
+            if (error.response.status === 404) {
+              this.errorText = "session with the id is not found"
+              this.sessionId = null
+            } else {
+              this.errorText = error.response.data.toString() + error.response.status.toString();
+            }
           });
     },
     voteInSession(vote) {
@@ -243,6 +262,7 @@ export default {
           })
           .catch(error => {
             console.log(error);
+            this.errorText = error.response.data.toString()
           });
     },
     clearVotes() {
@@ -258,6 +278,7 @@ export default {
           })
           .catch(error => {
             console.log(error);
+            this.errorText = error.response.data.toString()
           });
     },
     showVotes() {
@@ -273,6 +294,7 @@ export default {
           })
           .catch(error => {
             console.log(error);
+            this.errorText = error.response.data.toString()
           });
     }
   }

@@ -72,6 +72,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 	user.Active = true
 
 	sessionId, err := getSessionId(r)
+
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
@@ -80,7 +81,11 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 	app.infoLog.Printf("join session %v for user %+v", sessionId, user)
 	user, err = app.sessionService.JoinSession(sessionId, user)
 	if err != nil {
-		app.serverError(w, err)
+		if err == models.ErrNoRecord {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
 		return
 	}
 
