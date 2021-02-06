@@ -43,49 +43,81 @@
     </template>
 
     <template v-if="sessionFound() && userId !== '' && session !== null">
-      <button class='button vote-button' v-on:click="voteInSession(1)">1</button>
-      <button class='button vote-button' v-on:click="voteInSession(2)">2</button>
-      <button class='button vote-button' v-on:click="voteInSession(3)">3</button>
-      <button class='button vote-button' v-on:click="voteInSession(5)">5</button>
-      <button class='button vote-button' v-on:click="voteInSession(8)">8</button>
-      <button class='button vote-button' v-on:click="voteInSession(13)">13</button>
-      <button class='button vote-button' v-on:click="voteInSession(20)">20</button>
-
-      <br>
-      <button class='button clear-button' v-on:click="clearVotes">Clear votes</button>
-      <button class='button show-votes-button' v-on:click="showVotes">Show votes</button>
+      <svg display="none">
+        <defs>
+          <g id="vote-circle">
+            <circle cx="7.5" cy="7.5" r="7.5"/>
+          </g>
+        </defs>
+      </svg>
 
       <template v-if="session.votes_info !== null && session.votes_info !== undefined">
-        <table>
-          <thead>
-          <tr>
-            <th>Name</th>
-            <th>Vote</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-bind:class="{ currentUser: vote.is_current_user}"
-              v-for="vote in session.votes_info" :key="vote.name">
-            <td>{{ vote.name }}</td>
-            <template v-if="vote.is_voted">
-              <template v-if="vote.vote !== null">
-                <td>{{ vote.vote }}</td>
-              </template>
-              <template v-else>
-                <td>Voted</td>
-              </template>
-            </template>
-            <template v-else>
-              <td>No vote</td>
-            </template>
-          </tr>
-          </tbody>
-        </table>
+        <div class="grid-item-members">
+          <div class="members-title text text-regular">X/X voted</div>
+
+          <div class="members-list">
+            <div v-bind:class="{ 'members-list-item': true, 'current-user': vote.is_current_user}"
+                 v-for="vote in session.votes_info" :key="vote.name">
+              <svg class="vote-indicator" width="15" height="15" viewBox="0 0 15 15" fill="none"
+                   xmlns="http://www.w3.org/2000/svg">
+                <use href="#vote-circle" v-bind:class="{'vote-yes': vote.is_voted, 'vote-no': !vote_is_voted } "/>
+              </svg>
+              <div class="text username">{{ vote.name }}</div>
+              <div class="card">
+                <template v-if="vote.vote !== null">
+                  <label>{{ vote.vote }}</label>
+                </template>
+                <template v-else>
+                  <label> </label>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
       </template>
-    </template>
-    <template v-if="session !== null && session.votes_hidden === false">
-      <br>
-      <strong>Average:</strong><label> {{ averageVote() }}</label>
+
+      <div class="grid-item-main">
+        <div class="result-container">
+          <div class="result">
+            <div class="text text-regular">average</div>
+            <div class="card">{{ averageVote() }}</div>
+          </div>
+          <div class="text timer">00:00:00</div>
+        </div>
+
+        <textarea placeholder="story description..."></textarea>
+
+        <div class="card-container">
+          <div class='card card-button' v-on:click="voteInSession(0)"><label>0</label></div>
+          <div class='card card-button' v-on:click="voteInSession(1)"><label>1</label></div>
+          <div class='card card-button' v-on:click="voteInSession(2)"><label>2</label></div>
+          <div class='card card-button' v-on:click="voteInSession(3)"><label>3</label></div>
+          <div class='card card-button' v-on:click="voteInSession(5)"><label>5</label></div>
+          <div class='card card-button' v-on:click="voteInSession(8)"><label>8</label></div>
+          <div class='card card-button' v-on:click="voteInSession(13)"><label>13</label></div>
+          <div class='card card-button' v-on:click="voteInSession(20)"><label>20</label></div>
+        </div>
+
+        <div class="controls-container">
+          <button class='button button-small' v-on:click="showVotes">show</button>
+          <button class='button button-small' v-on:click="clearVotes">clear</button>
+        </div>
+
+        <div class="copy-link-container">
+          <button class="copy-link-button">
+            <svg width="30" height="38" viewBox="0 0 30 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1.5" y="5.5" width="22" height="31" rx="4.5"/>
+              <mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="5" y="0" width="25" height="34">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M30 0H5V6H23V34H30V6V4V0Z" fill="#C4C4C4"/>
+              </mask>
+              <g mask="url(#mask0)">
+                <rect x="6.5" y="1.5" width="22" height="31" rx="4.5"/>
+              </g>
+            </svg>
+          </button>
+          <span class="text-small">session id {{ sessionId }}</span>
+        </div>
+      </div>
     </template>
   </div>
 </template>
@@ -121,6 +153,10 @@ export default {
       return this.sessionId != null && !isNaN(this.sessionId)
     },
     averageVote() {
+      if (this.session.votes_hidden) {
+        return " "
+      }
+
       let total = 0;
       let count = 0;
       for (var i = 0; i < this.session.votes_info.length; i++) {
