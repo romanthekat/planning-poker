@@ -33,11 +33,13 @@
       </div>
     </template>
     <template v-if="sessionFound() && userId !== '' && session === null">
-      <label>
-        Type name:
-        <input v-model="name">
-      </label>
-      <button v-on:click="joinSession">Join Session</button>
+      <div class="grid-item-main">
+        <div class="input-container">
+          <input type="text" placeholder="your name..." v-model="name">
+          <button class='button button-big' v-on:click="joinSession">join</button>
+        </div>
+        <div style="display: none" class="error text-regular">please enter a correct name</div>
+      </div>
     </template>
 
     <template v-if="sessionFound() && userId !== '' && session !== null">
