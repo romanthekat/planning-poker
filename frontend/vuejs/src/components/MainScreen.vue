@@ -91,7 +91,7 @@
           <div class="text timer">00:00:00</div>
         </div>
 
-        <textarea placeholder="story description..."></textarea>
+        <textarea disabled placeholder="story description...TBD"></textarea>
 
         <div class="card-container">
           <div class='card card-button' v-on:click="voteInSession(0)"><label>0</label></div>
@@ -110,7 +110,7 @@
         </div>
 
         <div class="copy-link-container">
-          <button class="copy-link-button">
+          <button class="copy-link-button" v-on:click=copyCurrentUrl>
             <svg width="30" height="38" viewBox="0 0 30 38" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="1.5" y="5.5" width="22" height="31" rx="4.5"/>
               <mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="5" y="0" width="25" height="34">
@@ -149,6 +149,10 @@ export default {
   },
 
   methods: {
+    copyCurrentUrl() {
+      console.log(window.location.href)
+      this.$copyText(window.location.href)
+    },
     getVotedCount() {
       return this.session.votes_info
           .filter(vote => vote.is_voted)
