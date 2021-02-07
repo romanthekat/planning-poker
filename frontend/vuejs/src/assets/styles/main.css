@@ -160,7 +160,7 @@ body {
 /*------------------------------------------------ UI Elements ------------------------------------------------*/
 
 .button {
-    font-family : inherit;
+    font-family: inherit;
     border: 2px solid var(--primary-color);
     border-radius: 10px;
     background-color: var(--bg-inactive-blue);
@@ -234,8 +234,9 @@ body {
 }
 
 .username {
+    padding-top: 5px;
     font-size: 1.1em;
-    width: 15rem
+    width: 15rem;
 }
 
 #logo {
@@ -243,7 +244,8 @@ body {
 }
 
 .vote-indicator {
-    padding: 1px 10px 6px 7px;
+    padding-right: 10px;
+    padding-left: 7px;
 }
 
 .vote-no {
@@ -255,7 +257,7 @@ body {
 }
 
 .card {
-    font-family : inherit;
+    font-family: inherit;
     width: 4rem;
     height: 2.5rem;
     border-radius: 5px;
@@ -366,7 +368,7 @@ textarea {
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
-    font-family : inherit;
+    font-family: inherit;
     border: 2px solid var(--primary-color);
     border-radius: 10px;
     background-color: var(--bg-input);
@@ -387,7 +389,7 @@ textarea:focus {
 }
 
 input[type=text] {
-    font-family : inherit;
+    font-family: inherit;
     border: 2px solid var(--primary-color);
     border-right: none;
     border-radius: 10px 0px 0px 10px;
