@@ -12,7 +12,7 @@ import (
 )
 
 const UserIdMaxValue = 420_000
-const pongWait = 60 * time.Second
+const pongWait = 30 * time.Second
 
 const pingPeriod = (pongWait * 9) / 10
 
