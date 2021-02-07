@@ -132,21 +132,20 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 	}
 	//TODO validate user id existence
 
-	//existingConn, ok := session.Connections[userId]
-	//if ok {
-	//	existingConn.Close()
-	//}
+	existingConn, ok := session.Connections[userId]
+	if ok {
+		existingConn.Close()
+	}
 	session.Connections[userId] = conn
 	conn.SetReadDeadline(time.Now().Add(pongWait))
 	conn.SetPongHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
+	s.SendUpdates(sessionId)
 
 	return nil
 }
 
 func (s SessionService) GetMaskedSessionForUser(session models.Session, userId models.UserId) models.Session {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	user, ok := session.Users[userId]
 	if ok {
 		user.LastActive = time.Now()
