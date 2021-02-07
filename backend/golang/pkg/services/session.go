@@ -12,6 +12,9 @@ import (
 )
 
 const UserIdMaxValue = 420_000
+const pongWait = 60 * time.Second
+
+const pingPeriod = (pongWait * 9) / 10
 
 type SessionService struct {
 	sessions models.SessionModel
@@ -134,6 +137,8 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 	//	existingConn.Close()
 	//}
 	session.Connections[userId] = conn
+	conn.SetReadDeadline(time.Now().Add(pongWait))
+	conn.SetPongHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
 	return nil
 }
