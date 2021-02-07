@@ -205,8 +205,7 @@ func (s SessionService) SendUpdates(sessionId models.SessionId) error {
 		sessionToReturn := s.GetMaskedSessionForUser(*session, userId)
 		err = conn.WriteJSON(sessionToReturn)
 		if err != nil {
-			s.errorLog.Println(err)
-			return err
+			s.errorLog.Printf("error for session %s user %s: %s\n", sessionId, userId, err)
 		}
 	}
 
