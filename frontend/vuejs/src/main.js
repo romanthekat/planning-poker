@@ -1,9 +1,13 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import VueClipboard from 'vue-clipboard2'
 
 import App from './App.vue'
 
 Vue.use(VueRouter)
+
+VueClipboard.config.autoSetContainer = true
+Vue.use(VueClipboard)
 
 Vue.config.productionTip = false
 
