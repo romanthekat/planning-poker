@@ -150,7 +150,6 @@ export default {
 
   methods: {
     copyCurrentUrl() {
-      console.log(window.location.href)
       this.$copyText(window.location.href)
     },
     getVotedCount() {
