@@ -182,7 +182,7 @@ export default {
         return 0
       }
 
-      return total / count;
+      return Math.round((total / count) * 10) / 10
     },
     createSession() {
       this.errorText = null //TODO it is bad to directly affect props
