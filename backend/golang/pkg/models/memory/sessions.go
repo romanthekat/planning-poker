@@ -2,6 +2,7 @@ package memory
 
 import (
 	"github.com/EvilKhaosKat/planning-poker/pkg/models"
+	"github.com/gorilla/websocket"
 	"math/rand"
 	"sync"
 	"time"
@@ -33,6 +34,9 @@ func removeExpiredSessions(sessionModel *SessionModel) {
 
 		for _, session := range sessionModel.sessions {
 			if time.Now().Sub(session.LastActive).Minutes() > SessionExpirationMin {
+				//for _, conn := range session.Connections {
+				//	conn.Close()
+				//}
 				delete(sessionModel.sessions, session.Id)
 			}
 		}
@@ -68,6 +72,7 @@ func (s SessionModel) Create() (*models.Session, error) {
 		Id:          id,
 		Users:       make(map[models.UserId]*models.User),
 		Votes:       make(map[models.UserId]*float32),
+		Connections: make(map[models.UserId]*websocket.Conn),
 		VotesInfo:   []models.VoteInfo{},
 		VotesHidden: true,
 		LastActive:  time.Now(),

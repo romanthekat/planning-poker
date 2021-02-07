@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"github.com/gorilla/websocket"
 	"time"
 )
 
@@ -15,8 +16,9 @@ type Session struct {
 	Id          SessionId           `json:"id"`
 	Users       map[UserId]*User    `json:"-"`
 	Votes       map[UserId]*float32 `json:"-"`
-	VotesInfo   []VoteInfo          `json:"votes_info"`
-	VotesHidden bool                `json:"votes_hidden"`
+	Connections map[UserId]*websocket.Conn `json:"-"`
+	VotesInfo   []VoteInfo `json:"votes_info"`
+	VotesHidden bool       `json:"votes_hidden"`
 	LastActive  time.Time
 }
 

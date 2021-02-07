@@ -4,10 +4,16 @@ import (
 	"encoding/json"
 	"github.com/EvilKhaosKat/planning-poker/pkg/models"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"strconv"
 	"time"
 )
+
+var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {
+	//TODO update origin policy to domain specific, in router too
+	return true
+}}
 
 func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
@@ -38,25 +44,25 @@ func (app *Application) getSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := app.sessionService.Get(sessionId)
-	if err != nil {
-		app.clientError(w, http.StatusNotFound)
-		return
-	}
-
 	userId, err := getUserId(r)
 	if err != nil {
 		app.clientError(w, http.StatusNotFound)
 		return
 	}
 
-	app.infoLog.Printf("get session %v for user %+v", sessionId, userId)
-	sessionToReturn := app.sessionService.GetMaskedSessionForUser(*session, userId)
-
-	err = json.NewEncoder(w).Encode(sessionToReturn)
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		app.serverError(w, err)
 		return
+	}
+
+	err = app.sessionService.SaveConnectionForUser(sessionId, userId, conn)
+	if err != nil {
+		if err == models.ErrNoRecord {
+			app.clientError(w, http.StatusNotFound)
+		} else {
+			app.clientError(w, http.StatusBadRequest)
+		}
 	}
 }
 

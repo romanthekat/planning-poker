@@ -29,7 +29,7 @@ func main() {
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	sessionModel := memory.NewSessionModel()
-	sessionService := services.NewSessionService(sessionModel)
+	sessionService := services.NewSessionService(sessionModel, errorLog, infoLog)
 
 	app := &Application{
 		errorLog:       errorLog,
