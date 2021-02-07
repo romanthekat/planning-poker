@@ -146,12 +146,6 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 }
 
 func (s SessionService) GetMaskedSessionForUser(session models.Session, userId models.UserId) models.Session {
-	user, ok := session.Users[userId]
-	if ok {
-		user.LastActive = time.Now()
-		user.Active = true
-	}
-
 	var votesInfo []models.VoteInfo
 
 	for displayUserId, user := range session.Users {
@@ -206,6 +200,12 @@ func (s SessionService) SendUpdates(sessionId models.SessionId) error {
 		err = conn.WriteJSON(sessionToReturn)
 		if err != nil {
 			s.errorLog.Printf("error for session %v user %v: %s\n", sessionId, userId, err)
+		} else {
+			user, ok := session.Users[userId]
+			if ok {
+				user.LastActive = time.Now()
+				user.Active = true
+			}
 		}
 	}
 
