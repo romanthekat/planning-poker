@@ -33,7 +33,7 @@ func removeExpiredSessions(sessionModel *SessionModel) {
 		sessionModel.mutex.Lock()
 
 		for _, session := range sessionModel.sessions {
-			if time.Now().Sub(session.LastActive).Minutes() > SessionExpirationMin {
+			if time.Since(session.LastActive).Minutes() > SessionExpirationMin {
 				for _, conn := range session.Connections {
 					conn.Close()
 				}
@@ -54,8 +54,9 @@ func expireUsers(sessionModel *SessionModel) {
 
 		for _, session := range sessionModel.sessions {
 			for _, user := range session.Users {
-				if time.Now().Sub(user.LastActive).Seconds() > UserExpirationSec {
+				if time.Since(user.LastActive).Seconds() > UserExpirationSec {
 					user.Active = false
+					//delete(session.Connections, user.Id)
 					//TODO check whether session votes must be shown/all active users voted
 				}
 			}
