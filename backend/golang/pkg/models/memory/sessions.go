@@ -34,9 +34,9 @@ func removeExpiredSessions(sessionModel *SessionModel) {
 
 		for _, session := range sessionModel.sessions {
 			if time.Now().Sub(session.LastActive).Minutes() > SessionExpirationMin {
-				//for _, conn := range session.Connections {
-				//	conn.Close()
-				//}
+				for _, conn := range session.Connections {
+					conn.Close()
+				}
 				delete(sessionModel.sessions, session.Id)
 			}
 		}
