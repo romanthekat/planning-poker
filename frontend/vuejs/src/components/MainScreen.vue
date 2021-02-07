@@ -28,7 +28,7 @@
     <template v-if="isSessionFound() && userId === ''">
       <div class="grid-item-main">
         <div class="input-container">
-          <input type="text" placeholder="your name..." v-model="name">
+          <input type="text" placeholder="your name..." v-model="name" v-on:keyup.enter=joinSession>
           <button class='button button-big' v-on:click="joinSession">join</button>
         </div>
         <template v-if="errorText">
@@ -39,7 +39,7 @@
     <template v-if="isSessionFound() && userId !== '' && session === null">
       <div class="grid-item-main">
         <div class="input-container">
-          <input type="text" placeholder="your name..." v-model="name">
+          <input type="text" placeholder="your name..." v-model="name" v-on:keyup.enter=joinSession>
           <button class='button button-big' v-on:click="joinSession">join</button>
         </div>
         <template v-if="errorText">
@@ -258,6 +258,7 @@ export default {
 
       this.connection.onerror = function (event) {
         console.log(event)
+        this.setupSessionConnection()
       }
     },
     voteInSession(vote) {
