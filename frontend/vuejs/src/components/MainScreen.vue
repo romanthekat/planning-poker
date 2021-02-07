@@ -66,7 +66,7 @@
                  v-for="vote in session.votes_info" :key="vote.name">
               <svg class="vote-indicator" width="15" height="15" viewBox="0 0 15 15" fill="none"
                    xmlns="http://www.w3.org/2000/svg">
-                <use href="#vote-circle" v-bind:class="{'vote-yes': vote.is_voted, 'vote-no': !vote_is_voted } "/>
+                <use href="#vote-circle" v-bind:class="{'vote-yes': vote.is_voted, 'vote-no': !vote.is_voted } "/>
               </svg>
               <div class="text username">{{ vote.name }}</div>
               <div class="card">
@@ -136,23 +136,16 @@ export default {
   props: {
     backendUrl: String,
     sessionId: Number,
-    errorText: String
   },
   data() {
     return {
       name: '',
       userId: '',
-      timer: '',
+      errorText: '',
       session: {},
-      vote: 0.0
+      vote: 0.0,
+      connection: '',
     }
-  },
-
-  created() {
-    this.interval = setInterval(this.fetchSession, 1000)
-  },
-  beforeDestroy() {
-    clearInterval(this.interval)
   },
 
   methods: {
@@ -166,6 +159,10 @@ export default {
     },
     getAverageVote() {
       if (this.session.votes_hidden) {
+        return " "
+      }
+
+      if (this.session.votes_info === undefined) {
         return " "
       }
 
@@ -187,26 +184,6 @@ export default {
 
       return total / count;
     },
-    fetchSession() {
-      if (this.userId !== '') {
-        axios({
-          method: 'get',
-          baseURL: this.backendUrl,
-          url: '/sessions/' + this.sessionId + '/get/' + this.userId,
-        })
-            .then(response => {
-              this.session = response.data
-            })
-            .catch(error => {
-              console.log(error)
-              this.errorText = error.response.data.toString();
-            });
-      }
-    },
-    beforeDestroy() {
-      clearInterval(this.timer)
-    },
-
     createSession() {
       this.errorText = null //TODO it is bad to directly affect props
 
@@ -236,6 +213,7 @@ export default {
       )
           .then(response => {
             this.userId = response.data.id
+            this.setupSessionConnection()
           })
           .catch(error => {
             console.log(error);
@@ -247,6 +225,37 @@ export default {
             }
           });
     },
+    setupSessionConnection() {
+      let isSsl = this.backendUrl.includes("https")
+
+      let url = this.backendUrl.replaceAll("https://", "").replaceAll("http://", "")
+          + '/sessions/' + this.sessionId + '/get/' + this.userId;
+      if (isSsl) {
+        url = "wss://" + url
+      } else {
+        url = "ws://" + url
+      }
+
+      console.log("connect to url: " + url);
+      this.connection = new WebSocket(url)
+
+      this.connection.onmessage = (event) => {
+        this.session = JSON.parse(event.data)
+      };
+
+      this.connection.onopen = function () {
+        console.log("successfully established websocket connection")
+      }
+
+      this.connection.onclose = function (event) {
+        console.log(event)
+        this.setupSessionConnection()
+      };
+
+      this.connection.onerror = function (event) {
+        console.log(event)
+      }
+    },
     voteInSession(vote) {
       this.vote = vote
 
@@ -257,9 +266,6 @@ export default {
             data: JSON.stringify({user_id: this.userId, vote: parseFloat(vote)}),
           }
       )
-          .then(() => {
-            this.fetchSession()
-          })
           .catch(error => {
             console.log(error);
             this.errorText = error.response.data.toString()
@@ -273,9 +279,6 @@ export default {
             data: JSON.stringify({user_id: this.userId}),
           }
       )
-          .then(() => {
-            this.fetchSession()
-          })
           .catch(error => {
             console.log(error);
             this.errorText = error.response.data.toString()
@@ -289,9 +292,6 @@ export default {
             data: JSON.stringify({user_id: this.userId}),
           }
       )
-          .then(() => {
-            this.fetchSession()
-          })
           .catch(error => {
             console.log(error);
             this.errorText = error.response.data.toString()

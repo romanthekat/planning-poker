@@ -2,7 +2,9 @@ package services
 
 import (
 	"github.com/EvilKhaosKat/planning-poker/pkg/models"
+	"github.com/gorilla/websocket"
 	"html"
+	"log"
 	"math/rand"
 	"sort"
 	"sync"
@@ -14,14 +16,17 @@ const UserIdMaxValue = 420_000
 type SessionService struct {
 	sessions models.SessionModel
 	mutex    *sync.Mutex
+	errorLog *log.Logger
+	infoLog  *log.Logger
 }
 
-func NewSessionService(sessions models.SessionModel) *SessionService {
-	return &SessionService{sessions, &sync.Mutex{}}
+func NewSessionService(sessions models.SessionModel, errorLog *log.Logger, infoLog *log.Logger) *SessionService {
+	return &SessionService{sessions, &sync.Mutex{}, errorLog, infoLog}
 }
 
 func (s SessionService) JoinSession(sessionId models.SessionId, user *models.User) (*models.User, error) {
 	s.mutex.Lock()
+	defer s.SendUpdates(sessionId)
 	defer s.mutex.Unlock()
 
 	session, err := s.Get(sessionId)
@@ -39,6 +44,7 @@ func (s SessionService) JoinSession(sessionId models.SessionId, user *models.Use
 
 func (s SessionService) Vote(sessionId models.SessionId, vote *models.Vote) error {
 	s.mutex.Lock()
+	defer s.SendUpdates(sessionId)
 	defer s.mutex.Unlock()
 
 	session, err := s.Get(sessionId)
@@ -77,6 +83,7 @@ func (s SessionService) Vote(sessionId models.SessionId, vote *models.Vote) erro
 
 func (s SessionService) Clear(sessionId models.SessionId) error {
 	s.mutex.Lock()
+	defer s.SendUpdates(sessionId)
 	defer s.mutex.Unlock()
 
 	session, err := s.Get(sessionId)
@@ -109,6 +116,26 @@ func (s SessionService) Get(id models.SessionId) (*models.Session, error) {
 	session.LastActive = time.Now()
 
 	return session, err
+}
+
+func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId models.UserId, conn *websocket.Conn) error {
+	s.mutex.Lock()
+	defer s.SendUpdates(sessionId)
+	defer s.mutex.Unlock()
+
+	session, err := s.Get(sessionId)
+	if err != nil {
+		return err
+	}
+	//TODO validate user id existence
+
+	//existingConn, ok := session.Connections[userId]
+	//if ok {
+	//	existingConn.Close()
+	//}
+	session.Connections[userId] = conn
+
+	return nil
 }
 
 func (s SessionService) GetMaskedSessionForUser(session models.Session, userId models.UserId) models.Session {
@@ -148,6 +175,7 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 
 func (s SessionService) Show(sessionId models.SessionId) error {
 	s.mutex.Lock()
+	defer s.SendUpdates(sessionId)
 	defer s.mutex.Unlock()
 
 	session, err := s.sessions.Get(sessionId)
@@ -156,6 +184,27 @@ func (s SessionService) Show(sessionId models.SessionId) error {
 	}
 
 	session.VotesHidden = false
+
+	return nil
+}
+
+func (s SessionService) SendUpdates(sessionId models.SessionId) error {
+	s.infoLog.Printf("send updates for session %v\n", sessionId)
+
+	session, err := s.sessions.Get(sessionId)
+	if err != nil {
+		s.errorLog.Println(err)
+		return err
+	}
+
+	for userId, conn := range session.Connections {
+		sessionToReturn := s.GetMaskedSessionForUser(*session, userId)
+		err = conn.WriteJSON(sessionToReturn)
+		if err != nil {
+			s.errorLog.Println(err)
+			return err
+		}
+	}
 
 	return nil
 }
