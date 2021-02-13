@@ -13,7 +13,7 @@ import (
 
 const UserIdMaxValue = 420_000
 
-const pongWait = 10 * time.Second
+const pongWait = 5 * time.Second
 const pingPeriod = (pongWait * 9) / 10
 
 type SessionService struct {
