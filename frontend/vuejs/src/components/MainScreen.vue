@@ -165,7 +165,7 @@ export default {
         return " "
       }
 
-      if (this.session.votes_info === undefined) {
+      if (this.session.votes_info === undefined || this.session.votes_info === null) {
         return " "
       }
 
@@ -251,12 +251,12 @@ export default {
       }
 
       this.connection.onclose = function (event) {
-        console.log(event)
+        console.log("closed:" + event)
         this.setupSessionConnection()
       };
 
       this.connection.onerror = function (event) {
-        console.log(event)
+        console.log("error: " + event)
         this.setupSessionConnection()
       }
     },

@@ -12,8 +12,8 @@ import (
 )
 
 const UserIdMaxValue = 420_000
-const pongWait = 30 * time.Second
 
+const pongWait = 10 * time.Second
 const pingPeriod = (pongWait * 9) / 10
 
 type SessionService struct {
@@ -31,6 +31,8 @@ func (s SessionService) JoinSession(sessionId models.SessionId, user *models.Use
 	s.mutex.Lock()
 	defer s.SendUpdates(sessionId)
 	defer s.mutex.Unlock()
+
+	s.updateUserActiveness(user)
 
 	session, err := s.Get(sessionId)
 	if err != nil {
@@ -107,7 +109,26 @@ func (s SessionService) Create() (*models.Session, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	return s.sessions.Create()
+	session, err := s.sessions.Create()
+	go func() {
+		ticker := time.NewTicker(pingPeriod)
+
+		for {
+			select {
+			case <-session.ExpirationChan:
+				break
+			case <-ticker.C:
+				for _, conn := range session.Connections {
+					err := conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(pingPeriod))
+					if err != nil {
+						s.errorLog.Printf("ping error: %s", err)
+					}
+				}
+			}
+		}
+	}()
+
+	return session, err
 }
 
 func (s SessionService) Get(id models.SessionId) (*models.Session, error) {
@@ -137,8 +158,27 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 		existingConn.Close()
 	}
 	session.Connections[userId] = conn
-	conn.SetReadDeadline(time.Now().Add(pongWait))
-	conn.SetPongHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
+	//naive reader from connection until error happens, otherwise pong handler won't work
+	go func(c *websocket.Conn) {
+		for {
+			if _, _, err := c.NextReader(); err != nil {
+				c.Close()
+				break
+			}
+		}
+	}(conn)
+
+	conn.SetPongHandler(func(appData string) error {
+		user, ok := session.Users[userId]
+		if ok {
+			s.updateUserActiveness(user)
+		}
+
+		//conn.SetReadDeadline(time.Now().Add(pongWait));
+
+		return nil
+	})
 
 	s.SendUpdates(sessionId)
 
@@ -203,13 +243,17 @@ func (s SessionService) SendUpdates(sessionId models.SessionId) error {
 		} else {
 			user, ok := session.Users[userId]
 			if ok {
-				user.LastActive = time.Now()
-				user.Active = true
+				s.updateUserActiveness(user)
 			}
 		}
 	}
 
 	return nil
+}
+
+func (s SessionService) updateUserActiveness(user *models.User) {
+	user.LastActive = time.Now()
+	user.Active = true
 }
 
 func getVoteToShow(vote *float32, votesHidden bool, sameUser bool) *float32 {
