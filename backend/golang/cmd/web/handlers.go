@@ -7,7 +7,6 @@ import (
 	"github.com/gorilla/websocket"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {
@@ -73,9 +72,6 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		app.errorLog.Println(err)
 		return
 	}
-
-	user.LastActive = time.Now()
-	user.Active = true
 
 	sessionId, err := getSessionId(r)
 

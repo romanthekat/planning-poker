@@ -13,13 +13,14 @@ type UserId int
 
 //Session
 type Session struct {
-	Id          SessionId           `json:"id"`
-	Users       map[UserId]*User    `json:"-"`
-	Votes       map[UserId]*float32 `json:"-"`
-	Connections map[UserId]*websocket.Conn `json:"-"`
-	VotesInfo   []VoteInfo `json:"votes_info"`
-	VotesHidden bool       `json:"votes_hidden"`
-	LastActive  time.Time
+	Id             SessionId           `json:"id"`
+	Users          map[UserId]*User    `json:"-"`
+	Votes          map[UserId]*float32 `json:"-"`
+	VotesInfo      []VoteInfo          `json:"votes_info"`
+	VotesHidden    bool                `json:"votes_hidden"`
+	LastActive     time.Time
+	Connections    map[UserId]*websocket.Conn `json:"-"`
+	ExpirationChan chan interface{}           `json:"-"`
 }
 
 type User struct {

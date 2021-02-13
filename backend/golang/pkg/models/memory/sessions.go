@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"fmt"
 	"github.com/EvilKhaosKat/planning-poker/pkg/models"
 	"github.com/gorilla/websocket"
 	"math/rand"
@@ -9,7 +10,7 @@ import (
 )
 
 const SessionExpirationMin = 42.0
-const UserExpirationSec = 7.0
+const UserExpirationSec = 20.0
 
 type SessionModel struct {
 	sessions map[models.SessionId]*models.Session
@@ -27,13 +28,14 @@ func NewSessionModel() *SessionModel {
 
 func removeExpiredSessions(sessionModel *SessionModel) {
 	ticker := time.NewTicker(time.Minute)
-	defer ticker.Stop()
 
 	for range ticker.C {
 		sessionModel.mutex.Lock()
 
 		for _, session := range sessionModel.sessions {
 			if time.Since(session.LastActive).Minutes() > SessionExpirationMin {
+				session.ExpirationChan <- struct{}{}
+
 				for _, conn := range session.Connections {
 					conn.Close()
 				}
@@ -55,6 +57,7 @@ func expireUsers(sessionModel *SessionModel) {
 		for _, session := range sessionModel.sessions {
 			for _, user := range session.Users {
 				if time.Since(user.LastActive).Seconds() > UserExpirationSec {
+					fmt.Printf("expire user: %+v, session: %d\n", user, session.Id)
 					user.Active = false
 					//delete(session.Connections, user.Id)
 					//TODO check whether session votes must be shown/all active users voted
@@ -70,13 +73,14 @@ func (s SessionModel) Create() (*models.Session, error) {
 	id := models.SessionId(generateRandomId())
 
 	session := &models.Session{
-		Id:          id,
-		Users:       make(map[models.UserId]*models.User),
-		Votes:       make(map[models.UserId]*float32),
-		Connections: make(map[models.UserId]*websocket.Conn),
-		VotesInfo:   []models.VoteInfo{},
-		VotesHidden: true,
-		LastActive:  time.Now(),
+		Id:             id,
+		Users:          make(map[models.UserId]*models.User),
+		Votes:          make(map[models.UserId]*float32),
+		VotesInfo:      []models.VoteInfo{},
+		VotesHidden:    true,
+		LastActive:     time.Now(),
+		Connections:    make(map[models.UserId]*websocket.Conn),
+		ExpirationChan: make(chan interface{}, 1),
 	}
 
 	s.update(func() { s.sessions[id] = session })
