@@ -21,7 +21,7 @@ export default {
     }
   },
   created() {
-    document.title = "=^_^= scrum planning poker/planner cat";
+    document.title = "scrum planning poker/planner cat";
   }
 }
 </script>
