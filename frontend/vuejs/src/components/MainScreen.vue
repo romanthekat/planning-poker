@@ -135,7 +135,7 @@ export default {
   name: 'MainScreen',
   props: {
     backendUrl: String,
-    sessionId: Number,
+    sessionId: String,
   },
   data() {
     return {
@@ -158,7 +158,12 @@ export default {
           .length
     },
     isSessionFound() {
-      return this.sessionId != null && !isNaN(this.sessionId)
+      return this.sessionId != null && this.sessionId !== ""
+    },
+    clearErrorText() {
+      if (this) {
+        this.errorText = null; //TODO it is bad to directly affect props
+      }
     },
     getAverageVote() {
       if (this.session.votes_hidden) {
@@ -188,7 +193,7 @@ export default {
       return Math.round((total / count) * 10) / 10
     },
     createSession() {
-      this.errorText = null //TODO it is bad to directly affect props
+      this.clearErrorText()
 
       axios({
         method: 'post',
@@ -205,7 +210,7 @@ export default {
           });
     },
     joinSession() {
-      this.errorText = null
+      this.clearErrorText()
 
       axios({
             method: 'post',
@@ -225,6 +230,7 @@ export default {
               this.sessionId = null
             } else {
               this.errorText = error.response.data.toString() + error.response.status.toString();
+              this.sessionId = null
             }
           });
     },
