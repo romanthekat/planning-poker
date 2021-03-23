@@ -160,7 +160,7 @@ export default {
     name: {
       required,
       minLength: minLength(1),
-      maxLength: maxLength(42)
+      maxLength: maxLength(20)
     },
   },
 
