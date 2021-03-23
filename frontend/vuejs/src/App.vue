@@ -17,7 +17,6 @@ export default {
       backendUrl: process.env.VUE_APP_BACKEND_URL,
       sessionId: parseInt(this.$route.params.sessionId) || null,
       userId: null,
-      userName: null
     }
   },
   created() {

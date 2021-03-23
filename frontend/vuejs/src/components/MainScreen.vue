@@ -20,7 +20,7 @@
           <button class="button button-big" v-on:click="this.errorText=null">join</button>
         </div>
         <template v-if="errorText">
-          <div class="error text-regular">session with the id is not found</div>
+          <div class="error text-regular">{{ errorText }}</div>
         </template>
       </div>
     </template>
@@ -33,6 +33,12 @@
         </div>
         <template v-if="errorText">
           <div class="error text-regular">{{ errorText }}</div>
+        </template>
+        <template v-if="!$v.name.minLength">
+          <div class="error text-regular">Name must have at least {{ $v.name.$params.minLength.min }} letters.</div>
+        </template>
+        <template v-if="!$v.name.maxLength">
+          <div class="error text-regular">Name must have up to {{ $v.name.$params.maxLength.max }} letters.</div>
         </template>
       </div>
     </template>
@@ -131,6 +137,8 @@
 <script>
 import axios from "axios";
 
+const {required, minLength, maxLength} = require('vuelidate/lib/validators')
+
 export default {
   name: 'MainScreen',
   props: {
@@ -146,6 +154,14 @@ export default {
       vote: 0.0,
       connection: '',
     }
+  },
+
+  validations: {
+    name: {
+      required,
+      minLength: minLength(1),
+      maxLength: maxLength(42)
+    },
   },
 
   methods: {
@@ -229,7 +245,7 @@ export default {
               this.errorText = "session with the id is not found"
               this.sessionId = null
             } else {
-              this.errorText = error.response.data.toString() + error.response.status.toString();
+              this.errorText = error.response.data.toString()
               this.sessionId = null
             }
           });
