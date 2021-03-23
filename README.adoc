@@ -11,6 +11,9 @@ Currently, consists of `backend` part (golang) and `frontend` part (vuejs).
 === backend
 `go build ./cmd/web`
 
+==== docker
+`docker build -t planning-poker ./ && docker run --rm -p 10080:10080 --name planning-poker -t planning-poker`
+
 === frontend
 ```
 yarn install
