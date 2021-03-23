@@ -5,6 +5,7 @@ import (
 	"github.com/EvilKhaosKat/planning-poker/pkg/models"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"gopkg.in/validator.v2"
 	"net/http"
 	"strconv"
 )
@@ -70,6 +71,10 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		app.errorLog.Println(err)
+		return
+	}
+	if err := validator.Validate(user); err != nil {
+		app.clientErrorWithText(w, http.StatusBadRequest, err)
 		return
 	}
 

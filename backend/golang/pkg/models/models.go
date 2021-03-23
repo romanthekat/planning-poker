@@ -25,7 +25,7 @@ type Session struct {
 
 type User struct {
 	Id         UserId    `json:"id"`
-	Name       string    `json:"name"`
+	Name       string    `json:"name" validate:"min=1,max=42"`
 	LastActive time.Time `json:"last_active"`
 	Active     bool      `json:"active"`
 }
