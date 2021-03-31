@@ -209,11 +209,11 @@ body {
 
 .copy-link-button rect {
     stroke: var(--primary-color);
-    stroke-width: 3;
+    stroke-width: 2;
 }
 
 .copy-link-button:active rect {
-    stroke-width: 2;
+    stroke-width: 3;
 }
 
 .copy-link-button:focus {
@@ -237,6 +237,8 @@ body {
     padding-top: 5px;
     font-size: 1.1em;
     width: 15rem;
+    overflow: hidden;
+    margin-right: 5px;
 }
 
 #logo {
