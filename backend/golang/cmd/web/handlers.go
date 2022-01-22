@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/EvilKhaosKat/planning-poker/pkg/models"
+	"github.com/romanthekat/planning-poker/pkg/models"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"gopkg.in/validator.v2"

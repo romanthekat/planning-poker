@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/EvilKhaosKat/planning-poker/pkg/models"
+	"github.com/romanthekat/planning-poker/pkg/models"
 	"github.com/gorilla/websocket"
 	"html"
 	"log"

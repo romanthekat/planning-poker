@@ -1,7 +1,7 @@
 package mock
 
 //
-//import "github.com/EvilKhaosKat/FaceRecognitionBackend/pkg/models"
+//import "github.com/romanthekat/FaceRecognitionBackend/pkg/models"
 //
 ////Person used in mock model
 //var Person = &models.Person{

@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/EvilKhaosKat/FaceRecognitionBackend/pkg/models"
-	"github.com/EvilKhaosKat/FaceRecognitionBackend/pkg/models/mock"
+	"github.com/romanthekat/FaceRecognitionBackend/pkg/models"
+	"github.com/romanthekat/FaceRecognitionBackend/pkg/models/mock"
 	"net/http"
 	"net/http/httptest"
 	"testing"

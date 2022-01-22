@@ -2,7 +2,7 @@ package memory
 
 import (
 	"fmt"
-	"github.com/EvilKhaosKat/planning-poker/pkg/models"
+	"github.com/romanthekat/planning-poker/pkg/models"
 	"github.com/gorilla/websocket"
 	"math/rand"
 	"sync"

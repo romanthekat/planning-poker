@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/EvilKhaosKat/FaceRecognitionBackend/pkg/models/mock"
-	"github.com/EvilKhaosKat/FaceRecognitionBackend/pkg/services"
+	"github.com/romanthekat/FaceRecognitionBackend/pkg/models/mock"
+	"github.com/romanthekat/FaceRecognitionBackend/pkg/services"
 	"io/ioutil"
 	"log"
 	"net/http"
