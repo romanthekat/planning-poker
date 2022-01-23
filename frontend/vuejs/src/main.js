@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import VueClipboard from 'vue-clipboard2'
 import Vuelidate from 'vuelidate'
+import gsap from 'gsap'
 
 import App from './App.vue'
 
@@ -28,3 +29,5 @@ new Vue({
     render: h => h(App),
     router: router,
 }).$mount('#app')
+
+Vue.prototype.$gsap = gsap

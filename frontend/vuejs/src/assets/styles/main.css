@@ -36,6 +36,7 @@ body {
 .grid-item-header {
     grid-column: 3;
     grid-row: 1;
+    position: relative;
 }
 
 .grid-item-members {
@@ -101,6 +102,10 @@ body {
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
+}
+
+.session-id-container {
+    position: relative;
 }
 
 .members-title {
@@ -226,6 +231,10 @@ body {
 
 .text-regular {
     font-size: 1.5em;
+}
+
+.votes-count {
+    color: var(--voted-green);
 }
 
 .text-small {
@@ -416,3 +425,28 @@ input[type=text]:focus {
 
 /*-----------------------------------------------------------------------------------*/
 
+#relativeSVG-fart {
+    position: absolute;
+    right: 60px;
+    top: 33px;
+}
+
+.fart {
+    opacity: 0;
+    fill-rule: evenodd;
+    clip-rule: evenodd;
+    stroke-linejoin: round;
+    stroke-miterlimit: 2;
+    fill: var(--primary-color);
+}
+
+.fart-cloud {
+    fill: var(--bg-inactive-blue);
+}
+
+#session-id-copy {
+    position: absolute;
+    left: 0px;
+    opacity: 0;
+    z-index: -1;
+}

@@ -6,6 +6,7 @@
 
 <script>
 import MainScreen from './components/MainScreen.vue'
+import "gsap"
 
 export default {
   name: 'App',
@@ -20,7 +21,7 @@ export default {
     }
   },
   created() {
-    document.title = "scrum planning poker/planner cat";
+    document.title = "planner cat - scrum planning poker";
   }
 }
 </script>
