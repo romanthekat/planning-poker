@@ -2,9 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/romanthekat/planning-poker/pkg/models"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/romanthekat/planning-poker/pkg/models"
 	"gopkg.in/validator.v2"
 	"net/http"
 	"strconv"
