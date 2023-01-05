@@ -185,7 +185,7 @@ body {
 }
 
 .button:active {
-    box-shadow: 5px 5px 5px var(--text-inactive-blue) inset
+    box-shadow: 0 0 10px 3px var(--primary-color);
 }
 
 .button:disabled {
