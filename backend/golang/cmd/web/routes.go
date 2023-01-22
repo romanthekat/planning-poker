@@ -10,9 +10,9 @@ func (app *Application) routes() http.Handler {
 	topMux := mux.NewRouter()
 
 	topMux.HandleFunc("/api/sessions", app.createSession)
+	topMux.HandleFunc("/api/sessions/{sessionId}/join", app.joinSession)
 	//TODO mux can't separate /number vs /text
 	topMux.HandleFunc("/api/sessions/{sessionId}/get/{userId}", app.getWebsocketConnection)
-	topMux.HandleFunc("/api/sessions/{sessionId}/join", app.joinSession)
 	topMux.HandleFunc("/api/sessions/{sessionId}/vote", app.vote)
 	topMux.HandleFunc("/api/sessions/{sessionId}/clear", app.clear)
 	topMux.HandleFunc("/api/sessions/{sessionId}/show", app.show)
