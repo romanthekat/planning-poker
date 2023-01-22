@@ -37,7 +37,7 @@ func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *Application) getSession(w http.ResponseWriter, r *http.Request) {
+func (app *Application) getWebsocketConnection(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := getSessionId(r)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
