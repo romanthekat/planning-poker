@@ -11,14 +11,14 @@ var ErrNoRecord = errors.New("models: no matching record found")
 type SessionId int
 type UserId int
 
-//Session
+// Session
 type Session struct {
-	Id             SessionId           `json:"id"`
-	Users          map[UserId]*User    `json:"-"`
-	Votes          map[UserId]*float32 `json:"-"`
-	VotesInfo      []VoteInfo          `json:"votes_info"`
-	VotesHidden    bool                `json:"votes_hidden"`
-	LastActive     time.Time
+	Id             SessionId                  `json:"id"`
+	Users          map[UserId]*User           `json:"-"`
+	Votes          map[UserId]*float32        `json:"-"`
+	VotesInfo      []VoteInfo                 `json:"votes_info"`
+	VotesHidden    bool                       `json:"votes_hidden"`
+	LastActive     time.Time                  `json:"-"`
 	Connections    map[UserId]*websocket.Conn `json:"-"`
 	ExpirationChan chan interface{}           `json:"-"`
 }
@@ -56,7 +56,7 @@ func (v VotesInfoByName) Swap(i, j int) {
 	v[i], v[j] = v[j], v[i]
 }
 
-//SessionModel defines model/DAO methods for Session
+// SessionModel defines model/DAO methods for Session
 type SessionModel interface {
 	Create() (*Session, error)
 	Get(id SessionId) (*Session, error)

@@ -31,21 +31,44 @@ See also link:frontend/vuejs/README.md[frontend README]
 
 [source]
 ----
+# create session
 POST localhost:10080/api/sessions
-----
 
-[source]
-----
-POST localhost:10080/api/sessions/SESSION_ID/join
-Content-Type: application/json
 {
-    "name": "Roman"
+    "id": 1234,
+    "votes_info": [],
+    "votes_hidden": true,
 }
 ----
 
 [source]
 ----
+# join session
+POST localhost:10080/api/sessions/SESSION_ID/join
+Content-Type: application/json
+{
+    "name": "Roman"
+}
+
+{
+    "id": 1234,
+    "name": "Roman",
+    "last_active": "2023-03-22T20:29:50.403844814Z",
+    "active": true
+}
+----
+
+[source]
+----
+# establish websocket connection
+# ugly url due to workaround for std mux 
 GET localhost:10080/api/sessions/SESSION_ID/get/USER_ID
+
+## votes hidden
+{"id":1234,"votes_info":[{"name":"Not Roman","is_voted":true,"vote":5,"is_current_user":false},{"name":"Roman","is_voted":false,"vote":null,"is_current_user":true}],"votes_hidden":true}
+
+## votes shown/session data visible
+{"id":1234,"votes_info":[{"name":"Not Roman","is_voted":true,"vote":5,"is_current_user":false},{"name":"Roman","is_voted":true,"vote":5,"is_current_user":true}],"votes_hidden":false}
 ----
 
 [source]
@@ -54,7 +77,7 @@ POST localhost:10080/api/sessions/SESSION_ID/vote
 Content-Type: application/json
 {
     "user_id": USER_ID,
-    "vote": 42.42
+    "vote": 8
 }
 ----
 
