@@ -43,6 +43,14 @@ POST localhost:10080/api/sessions
 
 [source]
 ----
+# check if session exists
+GET localhost:10080/api/sessions/SESSION_ID
+
+http code 204 or 404
+----
+
+[source]
+----
 # join session
 POST localhost:10080/api/sessions/SESSION_ID/join
 Content-Type: application/json
