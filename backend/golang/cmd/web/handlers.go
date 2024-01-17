@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/romanthekat/planning-poker/pkg/models"
@@ -58,12 +59,32 @@ func (app *Application) getWebsocketConnection(w http.ResponseWriter, r *http.Re
 
 	err = app.sessionService.SaveConnectionForUser(sessionId, userId, conn)
 	if err != nil {
-		if err == models.ErrNoRecord {
+		if errors.Is(err, models.ErrNoRecord) {
 			app.clientError(w, http.StatusNotFound)
 		} else {
 			app.clientError(w, http.StatusBadRequest)
 		}
 	}
+}
+
+func (app *Application) checkSessionExists(w http.ResponseWriter, r *http.Request) {
+	sessionId, err := getSessionId(r)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	_, err = app.sessionService.Get(sessionId)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	app.noContent(w)
 }
 
 func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
@@ -79,7 +100,6 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sessionId, err := getSessionId(r)
-
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
@@ -88,7 +108,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 	app.infoLog.Printf("join session %v for user %+v", sessionId, user)
 	user, err = app.sessionService.JoinSession(sessionId, user)
 	if err != nil {
-		if err == models.ErrNoRecord {
+		if errors.Is(err, models.ErrNoRecord) {
 			app.notFound(w)
 		} else {
 			app.serverError(w, err)
