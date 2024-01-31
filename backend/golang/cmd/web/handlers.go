@@ -60,9 +60,9 @@ func (app *Application) getWebsocketConnection(w http.ResponseWriter, r *http.Re
 	err = app.sessionService.SaveConnectionForUser(sessionId, userId, conn)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
-			app.clientError(w, http.StatusNotFound)
+			app.notFound(w)
 		} else {
-			app.clientError(w, http.StatusBadRequest)
+			app.badRequest(w)
 		}
 	}
 }
@@ -70,7 +70,7 @@ func (app *Application) getWebsocketConnection(w http.ResponseWriter, r *http.Re
 func (app *Application) checkSessionExists(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := getSessionId(r)
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.badRequest(w)
 		return
 	}
 
@@ -92,6 +92,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		app.errorLog.Println(err)
+		app.badRequest(w)
 		return
 	}
 	if err := validator.Validate(user); err != nil {
@@ -101,7 +102,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 
 	sessionId, err := getSessionId(r)
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.badRequest(w)
 		return
 	}
 
@@ -133,14 +134,14 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 
 	sessionId, err := getSessionId(r)
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.badRequest(w)
 		return
 	}
 
 	app.infoLog.Printf("vote %+v in session %v", vote, sessionId)
 	err = app.sessionService.Vote(sessionId, vote)
 	if err != nil {
-		app.clientError(w, http.StatusNotFound)
+		app.notFound(w)
 		return
 	}
 
@@ -154,13 +155,13 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 func (app *Application) show(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := getSessionId(r)
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.badRequest(w)
 		return
 	}
 
 	err = app.sessionService.Show(sessionId)
 	if err != nil {
-		app.clientError(w, http.StatusNotFound)
+		app.notFound(w)
 		return
 	}
 }
@@ -168,13 +169,13 @@ func (app *Application) show(w http.ResponseWriter, r *http.Request) {
 func (app *Application) clear(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := getSessionId(r)
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.badRequest(w)
 		return
 	}
 
 	err = app.sessionService.Clear(sessionId)
 	if err != nil {
-		app.clientError(w, http.StatusNotFound)
+		app.notFound(w)
 		return
 	}
 }

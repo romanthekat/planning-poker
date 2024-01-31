@@ -1,12 +1,15 @@
 package services
 
 import (
-	"github.com/romanthekat/planning-poker/pkg/models"
+	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/romanthekat/planning-poker/pkg/models"
 	"html"
+	"io"
 	"log"
 	"math/rand"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -42,7 +45,6 @@ func (s SessionService) JoinSession(sessionId models.SessionId, user *models.Use
 	user.Id = models.UserId(GenerateRandomId())
 
 	session.Users[user.Id] = user
-	session.VotesHidden = true
 
 	return user, nil
 }
@@ -144,14 +146,19 @@ func (s SessionService) Get(id models.SessionId) (*models.Session, error) {
 
 func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId models.UserId, conn *websocket.Conn) error {
 	s.mutex.Lock()
-	defer s.SendUpdates(sessionId)
 	defer s.mutex.Unlock()
 
 	session, err := s.Get(sessionId)
 	if err != nil {
 		return err
 	}
-	//TODO validate user id existence
+
+	_, ok := session.Users[userId]
+	if !ok {
+		return models.ErrNoRecord
+	}
+
+	defer s.SendUpdates(sessionId)
 
 	existingConn, ok := session.Connections[userId]
 	if ok {
@@ -162,10 +169,21 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 	//naive reader from connection until error happens, otherwise pong handler won't work
 	go func(c *websocket.Conn) {
 		for {
-			if _, _, err := c.NextReader(); err != nil {
+			messageType, reader, err := c.NextReader()
+			fmt.Println("messageType:", messageType)
+			if err != nil {
 				c.Close()
 				break
 			}
+
+			buf := new(strings.Builder)
+			_, err = io.Copy(buf, reader)
+			if err != nil {
+				c.Close()
+				break
+			}
+
+			fmt.Println("message: ", buf.String())
 		}
 	}(conn)
 
@@ -179,8 +197,6 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 
 		return nil
 	})
-
-	s.SendUpdates(sessionId)
 
 	return nil
 }

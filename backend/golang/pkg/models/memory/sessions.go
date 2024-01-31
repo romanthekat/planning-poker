@@ -2,8 +2,8 @@ package memory
 
 import (
 	"fmt"
-	"github.com/romanthekat/planning-poker/pkg/models"
 	"github.com/gorilla/websocket"
+	"github.com/romanthekat/planning-poker/pkg/models"
 	"math/rand"
 	"sync"
 	"time"
@@ -56,10 +56,12 @@ func expireUsers(sessionModel *SessionModel) {
 
 		for _, session := range sessionModel.sessions {
 			for _, user := range session.Users {
-				if time.Since(user.LastActive).Seconds() > UserExpirationSec {
+				if time.Since(user.LastActive).Seconds() > UserExpirationSec && user.Active {
 					fmt.Printf("expire user: %+v, session: %d\n", user, session.Id)
 					user.Active = false
-					//delete(session.Connections, user.Id)
+
+					delete(session.Connections, user.Id)
+					delete(session.Users, user.Id)
 					//TODO check whether session votes must be shown/all active users voted
 				}
 			}
@@ -109,7 +111,7 @@ func generateRandomId() int {
 	return rand.Intn(100000)
 }
 
-//TODO usage looks ugly
+// TODO usage looks ugly
 func (s SessionModel) update(callback func()) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()

@@ -11,4 +11,4 @@ WORKDIR /go/planning-poker
 COPY --from=builder /go/planning-poker/ .
 CMD ["./app"]
 
-EXPOSE 10080
+EXPOSE 1080

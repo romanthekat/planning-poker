@@ -19,6 +19,10 @@ func (app *Application) noContent(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (app *Application) badRequest(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusBadRequest)
+}
+
 func (app *Application) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
