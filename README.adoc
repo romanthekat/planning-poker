@@ -15,16 +15,7 @@ Currently, consists of `backend` part (golang) and `frontend` part (vuejs).
 `docker build -t planning-poker ./ && docker run --rm -p 10080:10080 --name planning-poker -t planning-poker`
 
 === frontend
-```
-yarn install
-yarn run serve #run local dev build
-yarn run build #production build
-```
-Local dev build will try to access backend on `http://127.0.0.1:10080/api`.
-
-For production build don't forget to update `.env.production` file's variables `VUE_APP_BACKEND_URL` and `VUE_APP_BASE_URL`.
-
-See also link:frontend/vuejs/README.md[frontend README]
+Deprecated and removed, see https://github.com/ParallelLines/planning-poker instead.
 
 
 == endpoints
