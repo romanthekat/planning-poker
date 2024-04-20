@@ -253,7 +253,7 @@ func (s SessionService) Show(sessionId models.SessionId) error {
 }
 
 func (s SessionService) SendUpdates(sessionId models.SessionId) error {
-	s.infoLog.Printf("send updates for session %v\n", sessionId)
+	s.infoLog.Printf("[%v] send updates for session", sessionId)
 
 	session, err := s.sessions.Get(sessionId)
 	if err != nil {
@@ -265,7 +265,7 @@ func (s SessionService) SendUpdates(sessionId models.SessionId) error {
 		sessionToReturn := s.GetMaskedSessionForUser(*session, userId)
 		err = conn.WriteJSON(sessionToReturn)
 		if err != nil {
-			s.errorLog.Printf("error for session %v user %v: %s\n", sessionId, userId, err)
+			s.errorLog.Printf("[%v] user %v: %s\n", sessionId, userId, err)
 		} else {
 			user, ok := session.Users[userId]
 			if ok {

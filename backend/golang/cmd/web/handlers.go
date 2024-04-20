@@ -106,7 +106,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.infoLog.Printf("join session %v for user id:%d name:%v", sessionId, user.Id, user.Name)
+	app.infoLog.Printf("[%v] join request for user '%v'", sessionId, user.Name)
 	user, err = app.sessionService.JoinSession(sessionId, user)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
@@ -116,6 +116,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	app.infoLog.Printf("[%v] joined id:%v, name:%v", sessionId, user.Id, user.Name)
 
 	err = json.NewEncoder(w).Encode(user)
 	if err != nil {
@@ -138,7 +139,7 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.infoLog.Printf("vote %+v in session %v", vote, sessionId)
+	app.infoLog.Printf("[%v] vote %+v", sessionId, vote)
 	err = app.sessionService.Vote(sessionId, vote)
 	if err != nil {
 		app.notFound(w)
