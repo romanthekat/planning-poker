@@ -20,7 +20,7 @@ const pingPeriod = (pongWait * 9) / 10
 
 type SessionService struct {
 	sessions models.SessionModel
-	mutex    *sync.Mutex
+	mutex    *sync.Mutex //TODO is it really needed, atomicity if needed is guaranteed by models level?
 	errorLog *log.Logger
 	infoLog  *log.Logger
 }
@@ -50,7 +50,7 @@ func (s SessionService) JoinSession(sessionId models.SessionId, user *models.Use
 
 func (s SessionService) Vote(sessionId models.SessionId, vote *models.Vote) error {
 	s.mutex.Lock()
-	defer s.SendUpdates(sessionId)
+	defer s.SendUpdates(sessionId) //TODO controversial to send updates here; side-effect needed, but who's responsible?
 	defer s.mutex.Unlock()
 
 	session, err := s.Get(sessionId)
@@ -65,6 +65,14 @@ func (s SessionService) Vote(sessionId models.SessionId, vote *models.Vote) erro
 
 	session.Votes[user.Id] = &vote.Vote
 
+	if s.allVotesObtained(session) {
+		session.VotesHidden = false
+	}
+
+	return nil
+}
+
+func (s SessionService) allVotesObtained(session *models.Session) bool {
 	//TODO that's ugly and needs tests
 	activeUsersCount := 0
 	for _, user := range session.Users {
@@ -80,11 +88,7 @@ func (s SessionService) Vote(sessionId models.SessionId, vote *models.Vote) erro
 		}
 	}
 
-	if activeUsersVotesCount == activeUsersCount {
-		session.VotesHidden = false
-	}
-
-	return nil
+	return activeUsersVotesCount == activeUsersCount
 }
 
 func (s SessionService) Clear(sessionId models.SessionId) error {
@@ -111,7 +115,13 @@ func (s SessionService) Create() (*models.Session, error) {
 	defer s.mutex.Unlock()
 
 	session, err := s.sessions.Create()
-	go func() {
+	go s.tickerFunctionForSession(session)()
+
+	return session, err
+}
+
+func (s SessionService) tickerFunctionForSession(session *models.Session) func() {
+	return func() {
 		ticker := time.NewTicker(pingPeriod)
 
 		for {
@@ -128,9 +138,7 @@ func (s SessionService) Create() (*models.Session, error) {
 				}
 			}
 		}
-	}()
-
-	return session, err
+	}
 }
 
 func (s SessionService) Get(id models.SessionId) (*models.Session, error) {
@@ -162,7 +170,7 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 
 	existingConn, ok := session.Connections[userId]
 	if ok {
-		existingConn.Close()
+		_ = existingConn.Close()
 	}
 	session.Connections[userId] = conn
 
@@ -172,14 +180,16 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 			messageType, reader, err := c.NextReader()
 			s.infoLog.Println("websocket messageType: ", messageType)
 			if err != nil {
-				c.Close()
+				s.errorLog.Println(err)
+				_ = c.Close()
 				break
 			}
 
 			buf := new(strings.Builder)
 			_, err = io.Copy(buf, reader)
 			if err != nil {
-				c.Close()
+				s.errorLog.Println(err)
+				_ = c.Close()
 				break
 			}
 

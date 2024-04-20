@@ -5,7 +5,7 @@ image::docs/main.png[]
 This is simplistic scrum planning poker application.
 It keeps all data in memory, and expire it after period of inactivity.
 
-Currently, consists of `backend` part (golang) and `frontend` part (vuejs).
+Currently, consists of `backend` part (golang).
 
 == build
 === backend

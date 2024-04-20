@@ -11,6 +11,7 @@ import (
 
 const SessionExpirationMin = 42.0
 const UserExpirationSec = 20.0
+const MaxSessionId = 420_000
 
 type SessionModel struct {
 	sessions map[models.SessionId]*models.Session
@@ -108,7 +109,7 @@ func (s SessionModel) Remove(id models.SessionId) (int64, error) {
 }
 
 func generateRandomId() int {
-	return rand.Intn(100000)
+	return rand.Intn(MaxSessionId)
 }
 
 // TODO usage looks ugly
