@@ -20,7 +20,7 @@ const pingPeriod = (pongWait * 9) / 10
 
 type SessionService struct {
 	sessions models.SessionModel
-	mutex    *sync.Mutex //TODO is it really needed, atomicity if needed is guaranteed by models level?
+	mutex    *sync.Mutex //TODO move all changes of service to model level, and get rid of mutex
 	errorLog *log.Logger
 	infoLog  *log.Logger
 }
@@ -175,7 +175,24 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 	session.Connections[userId] = conn
 
 	//naive reader from connection until error happens, otherwise pong handler won't work
-	go func(c *websocket.Conn) {
+	go s.websocketReaderFunction()(conn)
+
+	conn.SetPongHandler(func(appData string) error {
+		user, ok := session.Users[userId]
+		if ok {
+			s.updateUserActiveness(user)
+		}
+
+		//conn.SetReadDeadline(time.Now().Add(pongWait));
+
+		return nil
+	})
+
+	return nil
+}
+
+func (s SessionService) websocketReaderFunction() func(c *websocket.Conn) {
+	return func(c *websocket.Conn) {
 		for {
 			messageType, reader, err := c.NextReader()
 			s.infoLog.Println("websocket messageType: ", messageType)
@@ -195,20 +212,7 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 
 			s.infoLog.Println("websocket message: ", buf.String())
 		}
-	}(conn)
-
-	conn.SetPongHandler(func(appData string) error {
-		user, ok := session.Users[userId]
-		if ok {
-			s.updateUserActiveness(user)
-		}
-
-		//conn.SetReadDeadline(time.Now().Add(pongWait));
-
-		return nil
-	})
-
-	return nil
+	}
 }
 
 func (s SessionService) GetMaskedSessionForUser(session models.Session, userId models.UserId) models.Session {
