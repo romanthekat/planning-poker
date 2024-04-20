@@ -106,7 +106,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.infoLog.Printf("join session %v for user %v %v", sessionId, user.Id, user.Name)
+	app.infoLog.Printf("join session %v for user id:%d name:%v", sessionId, user.Id, user.Name)
 	user, err = app.sessionService.JoinSession(sessionId, user)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
