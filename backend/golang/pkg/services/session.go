@@ -20,7 +20,7 @@ const pingPeriod = (pongWait * 9) / 10
 
 type SessionService struct {
 	sessions models.SessionModel
-	mutex    *sync.Mutex //TODO move all changes of service to model level, and get rid of mutex
+	mutex    *sync.Mutex //TODO move all changes of session to model level, then get rid of mutex
 	errorLog *log.Logger
 	infoLog  *log.Logger
 }
