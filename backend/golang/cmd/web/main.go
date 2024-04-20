@@ -22,7 +22,7 @@ type Application struct {
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	addr := flag.String("addr", ":1080", "HTTP network address")
+	addr := flag.String("addr", ":10080", "HTTP network address")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)

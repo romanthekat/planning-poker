@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/romanthekat/planning-poker/pkg/models"
 	"html"
@@ -120,10 +119,11 @@ func (s SessionService) Create() (*models.Session, error) {
 			case <-session.ExpirationChan:
 				break
 			case <-ticker.C:
-				for _, conn := range session.Connections {
+				for userId, conn := range session.Connections {
 					err := conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(pingPeriod))
 					if err != nil {
 						s.errorLog.Printf("ping error: %s", err)
+						delete(session.Connections, userId)
 					}
 				}
 			}
@@ -170,7 +170,7 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 	go func(c *websocket.Conn) {
 		for {
 			messageType, reader, err := c.NextReader()
-			fmt.Println("messageType:", messageType)
+			s.infoLog.Println("websocket messageType: ", messageType)
 			if err != nil {
 				c.Close()
 				break
@@ -183,7 +183,7 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 				break
 			}
 
-			fmt.Println("message: ", buf.String())
+			s.infoLog.Println("websocket message: ", buf.String())
 		}
 	}(conn)
 
