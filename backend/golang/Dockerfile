@@ -1,4 +1,4 @@
-FROM golang:1.16.2 as builder
+FROM golang:1.22.2 as builder
 WORKDIR /go/planning-poker
 COPY go.mod go.sum ./
 RUN go mod download
@@ -11,4 +11,4 @@ WORKDIR /go/planning-poker
 COPY --from=builder /go/planning-poker/ .
 CMD ["./app"]
 
-EXPOSE 1080
+EXPOSE 10080
