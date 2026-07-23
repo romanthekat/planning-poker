@@ -2,14 +2,13 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/romanthekat/planning-poker/pkg/models"
 	"github.com/romanthekat/planning-poker/pkg/models/memory"
 	"github.com/romanthekat/planning-poker/pkg/services"
-	"log"
-	"math/rand"
-	"net/http"
-	"os"
-	"time"
 )
 
 type Application struct {
@@ -20,8 +19,6 @@ type Application struct {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-
 	addr := flag.String("addr", ":10080", "HTTP network address")
 	flag.Parse()
 

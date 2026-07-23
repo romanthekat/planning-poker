@@ -2,8 +2,9 @@ package models
 
 import (
 	"errors"
-	"github.com/gorilla/websocket"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 var ErrNoRecord = errors.New("models: no matching record found")
@@ -11,16 +12,15 @@ var ErrNoRecord = errors.New("models: no matching record found")
 type SessionId int
 type UserId int
 
-// Session
 type Session struct {
 	Id             SessionId                  `json:"id"`
 	Users          map[UserId]*User           `json:"-"`
-	Votes          map[UserId]*float32        `json:"-"`
+	Votes          map[UserId]string          `json:"-"`
 	VotesInfo      []VoteInfo                 `json:"votes_info"`
 	VotesHidden    bool                       `json:"votes_hidden"`
 	LastActive     time.Time                  `json:"-"`
 	Connections    map[UserId]*websocket.Conn `json:"-"`
-	ExpirationChan chan interface{}           `json:"-"`
+	ExpirationChan chan any                   `json:"-"`
 }
 
 type User struct {
@@ -31,15 +31,15 @@ type User struct {
 }
 
 type Vote struct {
-	UserId UserId  `json:"user_id"`
-	Vote   float32 `json:"vote"`
+	UserId UserId `json:"user_id"`
+	Vote   string `json:"vote"`
 }
 
 type VoteInfo struct {
-	Name        string   `json:"name"`
-	Voted       bool     `json:"is_voted"`
-	Vote        *float32 `json:"vote"`
-	CurrentUser bool     `json:"is_current_user"`
+	Name        string `json:"name"`
+	Voted       bool   `json:"is_voted"`
+	Vote        string `json:"vote"`
+	CurrentUser bool   `json:"is_current_user"`
 }
 
 type VotesInfoByName []VoteInfo

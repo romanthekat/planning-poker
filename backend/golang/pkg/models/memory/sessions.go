@@ -2,11 +2,12 @@ package memory
 
 import (
 	"fmt"
-	"github.com/gorilla/websocket"
-	"github.com/romanthekat/planning-poker/pkg/models"
 	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
+	"github.com/romanthekat/planning-poker/pkg/models"
 )
 
 const SessionExpirationMin = 42.0
@@ -78,12 +79,12 @@ func (s SessionModel) Create() (*models.Session, error) {
 	session := &models.Session{
 		Id:             id,
 		Users:          make(map[models.UserId]*models.User),
-		Votes:          make(map[models.UserId]*float32),
+		Votes:          make(map[models.UserId]string),
 		VotesInfo:      []models.VoteInfo{},
 		VotesHidden:    true,
 		LastActive:     time.Now(),
 		Connections:    make(map[models.UserId]*websocket.Conn),
-		ExpirationChan: make(chan interface{}, 1),
+		ExpirationChan: make(chan any, 1),
 	}
 
 	s.update(func() { s.sessions[id] = session })

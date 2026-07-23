@@ -1,8 +1,6 @@
 package services
 
 import (
-	"github.com/gorilla/websocket"
-	"github.com/romanthekat/planning-poker/pkg/models"
 	"html"
 	"io"
 	"log"
@@ -11,6 +9,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
+	"github.com/romanthekat/planning-poker/pkg/models"
 )
 
 const UserIdMaxValue = 420_000
@@ -63,7 +64,7 @@ func (s SessionService) Vote(sessionId models.SessionId, vote *models.Vote) erro
 		return models.ErrNoRecord
 	}
 
-	session.Votes[user.Id] = &vote.Vote
+	session.Votes[user.Id] = vote.Vote
 
 	if s.allVotesObtained(session) {
 		session.VotesHidden = false
@@ -228,7 +229,7 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 
 		voteInfo := models.VoteInfo{
 			Name:        html.EscapeString(user.Name),
-			Voted:       userVote != nil,
+			Voted:       userVote != "",
 			Vote:        getVoteToShow(userVote, session.VotesHidden, isCurrentUser),
 			CurrentUser: isCurrentUser,
 		}
@@ -286,12 +287,12 @@ func (s SessionService) updateUserActiveness(user *models.User) {
 	user.Active = true
 }
 
-func getVoteToShow(vote *float32, votesHidden bool, sameUser bool) *float32 {
+func getVoteToShow(vote string, votesHidden bool, sameUser bool) string {
 	if sameUser || !votesHidden {
 		return vote
-	} else {
-		return nil
 	}
+
+	return ""
 }
 
 func GenerateRandomId() int {

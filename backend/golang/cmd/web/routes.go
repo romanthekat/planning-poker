@@ -1,9 +1,10 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func (app *Application) routes() http.Handler {
