@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/romanthekat/planning-poker/pkg/models"
 	"gopkg.in/validator.v2"
@@ -193,9 +192,7 @@ func getSessionId(r *http.Request) (models.SessionId, error) {
 }
 
 func getUserId(r *http.Request) (models.UserId, error) {
-	vars := mux.Vars(r)
-
-	userIdStr := vars["userId"]
+	userIdStr := r.PathValue("userId")
 	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
 		return -1, err
