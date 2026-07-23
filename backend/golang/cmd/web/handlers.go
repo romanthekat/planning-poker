@@ -183,9 +183,7 @@ func (app *Application) clear(w http.ResponseWriter, r *http.Request) {
 }
 
 func getSessionId(r *http.Request) (models.SessionId, error) {
-	vars := mux.Vars(r)
-
-	sessionIdStr := vars["sessionId"]
+	sessionIdStr := r.PathValue("sessionId")
 	sessionId, err := strconv.Atoi(sessionIdStr)
 	if err != nil {
 		return -1, err

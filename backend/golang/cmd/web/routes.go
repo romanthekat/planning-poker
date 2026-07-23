@@ -3,36 +3,31 @@ package main
 import (
 	"net/http"
 
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 func (app *Application) routes() http.Handler {
-	topMux := mux.NewRouter()
+	mux := http.NewServeMux()
 
-	topMux.HandleFunc("/api/sessions", app.createSession).
-		Methods(http.MethodPost)
-	topMux.HandleFunc("/api/sessions/{sessionId}", app.checkSessionExists).
-		Methods(http.MethodGet)
-	topMux.HandleFunc("/api/sessions/{sessionId}/join", app.joinSession).
-		Methods(http.MethodPost)
+	mux.HandleFunc("POST /api/sessions", app.createSession)
+
+	mux.HandleFunc("GET /api/sessions/{sessionId}", app.checkSessionExists)
+	mux.HandleFunc("POST /api/sessions/{sessionId}/join", app.joinSession)
 	//TODO mux can't separate /number vs /text
-	topMux.HandleFunc("/api/sessions/{sessionId}/get/{userId}", app.getWebsocketConnection).
-		Methods(http.MethodGet)
-	topMux.HandleFunc("/api/sessions/{sessionId}/vote", app.vote).
-		Methods(http.MethodPost)
-	topMux.HandleFunc("/api/sessions/{sessionId}/clear", app.clear).
-		Methods(http.MethodPost)
-	topMux.HandleFunc("/api/sessions/{sessionId}/show", app.show).
-		Methods(http.MethodPost)
+	mux.HandleFunc("GET /api/sessions/{sessionId}/get/{userId}", app.getWebsocketConnection)
+	mux.HandleFunc("POST /api/sessions/{sessionId}/vote", app.vote)
+	mux.HandleFunc("POST /api/sessions/{sessionId}/clear", app.clear)
+	mux.HandleFunc("POST /api/sessions/{sessionId}/show", app.show)
 
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	topMux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	//TODO use alice middleware?
-	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With, Content-Type, Authorization"})
-	originsOk := handlers.AllowedOrigins([]string{"*"})
-	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"X-Requested-With", "Content-Type", "Authorization"},
+		//AllowCredentials: true,
+	})
 
-	return app.logRequest(handlers.CORS(headersOk, originsOk, methodsOk)(topMux))
+	return app.logRequest(c.Handler(mux))
 }
