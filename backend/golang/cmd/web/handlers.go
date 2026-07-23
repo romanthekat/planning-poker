@@ -1,20 +1,16 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/websocket"
+	"github.com/coder/websocket"
 	"github.com/romanthekat/planning-poker/pkg/models"
 	"gopkg.in/validator.v2"
 )
-
-var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {
-	//TODO update origin policy to domain specific, in router too
-	return true
-}}
 
 func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
@@ -51,7 +47,10 @@ func (app *Application) getWebsocketConnection(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
+		OnPingReceived: nil,
+		OnPongReceived: app.pingPongReceiver(sessionId, userId),
+	})
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -63,6 +62,20 @@ func (app *Application) getWebsocketConnection(w http.ResponseWriter, r *http.Re
 			app.notFound(w)
 		} else {
 			app.badRequest(w)
+		}
+	}
+}
+
+func (app *Application) pingPongReceiver(sessionId models.SessionId, userId models.UserId) func(context.Context, []byte) {
+	return func(ctx context.Context, payload []byte) {
+		session, err := app.sessionService.Get(sessionId)
+		if err != nil {
+			return
+		}
+
+		user, ok := session.Users[userId]
+		if ok {
+			app.sessionService.UpdateUserActiveness(user)
 		}
 	}
 }

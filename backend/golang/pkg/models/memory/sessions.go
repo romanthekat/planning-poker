@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.com/coder/websocket"
 	"github.com/romanthekat/planning-poker/pkg/models"
 )
 
@@ -39,7 +39,7 @@ func removeExpiredSessions(sessionModel *SessionModel) {
 				session.ExpirationChan <- struct{}{}
 
 				for _, conn := range session.Connections {
-					conn.Close()
+					conn.Close(websocket.StatusGoingAway, "session has expired")
 				}
 				delete(sessionModel.sessions, session.Id)
 			}

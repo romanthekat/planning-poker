@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.com/coder/websocket"
 )
 
 var ErrNoRecord = errors.New("models: no matching record found")

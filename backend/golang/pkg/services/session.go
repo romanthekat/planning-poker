@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"html"
 	"io"
 	"log"
@@ -10,7 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
 	"github.com/romanthekat/planning-poker/pkg/models"
 )
 
@@ -35,7 +37,7 @@ func (s SessionService) JoinSession(sessionId models.SessionId, user *models.Use
 	defer s.SendUpdates(sessionId)
 	defer s.mutex.Unlock()
 
-	s.updateUserActiveness(user)
+	s.UpdateUserActiveness(user)
 
 	session, err := s.Get(sessionId)
 	if err != nil {
@@ -131,7 +133,7 @@ func (s SessionService) tickerFunctionForSession(session *models.Session) func()
 				break
 			case <-ticker.C:
 				for userId, conn := range session.Connections {
-					err := conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(pingPeriod))
+					err := conn.Ping(context.Background())
 					if err != nil {
 						s.errorLog.Printf("ping error: %s", err)
 						delete(session.Connections, userId)
@@ -171,23 +173,12 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 
 	existingConn, ok := session.Connections[userId]
 	if ok {
-		_ = existingConn.Close()
+		_ = existingConn.Close(websocket.StatusNormalClosure, "")
 	}
 	session.Connections[userId] = conn
 
 	//naive reader from connection until error happens, otherwise pong handler won't work
 	go s.websocketReaderFunction()(conn)
-
-	conn.SetPongHandler(func(appData string) error {
-		user, ok := session.Users[userId]
-		if ok {
-			s.updateUserActiveness(user)
-		}
-
-		//conn.SetReadDeadline(time.Now().Add(pongWait));
-
-		return nil
-	})
 
 	return nil
 }
@@ -195,11 +186,11 @@ func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId
 func (s SessionService) websocketReaderFunction() func(c *websocket.Conn) {
 	return func(c *websocket.Conn) {
 		for {
-			messageType, reader, err := c.NextReader()
+			messageType, reader, err := c.Reader(context.Background())
 			s.infoLog.Println("websocket messageType: ", messageType)
 			if err != nil {
 				s.errorLog.Println(err)
-				_ = c.Close()
+				_ = c.Close(websocket.StatusInternalError, "internal error")
 				break
 			}
 
@@ -207,7 +198,7 @@ func (s SessionService) websocketReaderFunction() func(c *websocket.Conn) {
 			_, err = io.Copy(buf, reader)
 			if err != nil {
 				s.errorLog.Println(err)
-				_ = c.Close()
+				_ = c.Close(websocket.StatusInternalError, "internal error")
 				break
 			}
 
@@ -268,13 +259,13 @@ func (s SessionService) SendUpdates(sessionId models.SessionId) error {
 
 	for userId, conn := range session.Connections {
 		sessionToReturn := s.GetMaskedSessionForUser(*session, userId)
-		err = conn.WriteJSON(sessionToReturn)
+		err = wsjson.Write(context.Background(), conn, sessionToReturn)
 		if err != nil {
 			s.errorLog.Printf("[%v] user %v: %s\n", sessionId, userId, err)
 		} else {
 			user, ok := session.Users[userId]
 			if ok {
-				s.updateUserActiveness(user)
+				s.UpdateUserActiveness(user)
 			}
 		}
 	}
@@ -282,7 +273,7 @@ func (s SessionService) SendUpdates(sessionId models.SessionId) error {
 	return nil
 }
 
-func (s SessionService) updateUserActiveness(user *models.User) {
+func (s SessionService) UpdateUserActiveness(user *models.User) {
 	user.LastActive = time.Now()
 	user.Active = true
 }
