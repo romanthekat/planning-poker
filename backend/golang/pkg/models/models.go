@@ -16,7 +16,7 @@ type Session struct {
 	Id             SessionId                  `json:"id"`
 	Users          map[UserId]*User           `json:"-"`
 	Votes          map[UserId]string          `json:"-"`
-	VotesInfo      []VoteInfo                 `json:"votes_info"`
+	VotesInfo      []Vote                     `json:"votes_info"`
 	VotesHidden    bool                       `json:"votes_hidden"`
 	LastActive     time.Time                  `json:"-"`
 	Connections    map[UserId]*websocket.Conn `json:"-"`
@@ -30,29 +30,29 @@ type User struct {
 	Active     bool      `json:"active"`
 }
 
-type Vote struct {
+type VoteRequest struct {
 	UserId UserId `json:"user_id"`
 	Vote   string `json:"vote"`
 }
 
-type VoteInfo struct {
+type Vote struct {
 	Name        string `json:"name"`
 	Voted       bool   `json:"is_voted"`
 	Vote        string `json:"vote"`
 	CurrentUser bool   `json:"is_current_user"`
 }
 
-type VotesInfoByName []VoteInfo
+type VotesByName []Vote
 
-func (v VotesInfoByName) Len() int {
+func (v VotesByName) Len() int {
 	return len(v)
 }
 
-func (v VotesInfoByName) Less(i, j int) bool {
+func (v VotesByName) Less(i, j int) bool {
 	return v[i].Name < v[j].Name
 }
 
-func (v VotesInfoByName) Swap(i, j int) {
+func (v VotesByName) Swap(i, j int) {
 	v[i], v[j] = v[j], v[i]
 }
 

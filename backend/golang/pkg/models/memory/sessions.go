@@ -80,7 +80,7 @@ func (s SessionModel) Create() (*models.Session, error) {
 		Id:             id,
 		Users:          make(map[models.UserId]*models.User),
 		Votes:          make(map[models.UserId]string),
-		VotesInfo:      []models.VoteInfo{},
+		VotesInfo:      []models.Vote{},
 		VotesHidden:    true,
 		LastActive:     time.Now(),
 		Connections:    make(map[models.UserId]*websocket.Conn),

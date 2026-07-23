@@ -49,7 +49,7 @@ func (s SessionService) JoinSession(sessionId models.SessionId, user *models.Use
 	return user, nil
 }
 
-func (s SessionService) Vote(sessionId models.SessionId, vote *models.Vote) error {
+func (s SessionService) Vote(sessionId models.SessionId, vote *models.VoteRequest) error {
 	s.mutex.Lock()
 	defer s.SendUpdates(sessionId) //TODO controversial to send updates here; side-effect needed, but who's responsible?
 	defer s.mutex.Unlock()
@@ -217,7 +217,7 @@ func (s SessionService) websocketReaderFunction() func(c *websocket.Conn) {
 }
 
 func (s SessionService) GetMaskedSessionForUser(session models.Session, userId models.UserId) models.Session {
-	var votesInfo []models.VoteInfo
+	var votes []models.Vote
 
 	for displayUserId, user := range session.Users {
 		if !user.Active {
@@ -227,18 +227,18 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 		userVote := session.Votes[displayUserId]
 		isCurrentUser := displayUserId == userId
 
-		voteInfo := models.VoteInfo{
+		vote := models.Vote{
 			Name:        html.EscapeString(user.Name),
 			Voted:       userVote != "",
 			Vote:        getVoteToShow(userVote, session.VotesHidden, isCurrentUser),
 			CurrentUser: isCurrentUser,
 		}
 
-		votesInfo = append(votesInfo, voteInfo)
+		votes = append(votes, vote)
 	}
 
-	sort.Sort(models.VotesInfoByName(votesInfo))
-	session.VotesInfo = votesInfo
+	sort.Sort(models.VotesByName(votes))
+	session.VotesInfo = votes
 	return session
 }
 

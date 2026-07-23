@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/romanthekat/planning-poker/pkg/models"
 	"gopkg.in/validator.v2"
-	"net/http"
-	"strconv"
 )
 
 var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {
@@ -126,7 +127,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
-	var vote *models.Vote
+	var vote *models.VoteRequest
 	err := json.NewDecoder(r.Body).Decode(&vote)
 	if err != nil {
 		app.errorLog.Println(err)
