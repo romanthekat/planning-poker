@@ -101,14 +101,14 @@ func (app *Application) checkSessionExists(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
-	var user *models.User
-	err := json.NewDecoder(r.Body).Decode(&user)
+	var createUserRequest *models.CreateUserRequest
+	err := json.NewDecoder(r.Body).Decode(&createUserRequest)
 	if err != nil {
 		app.errorLog.Println(err)
 		app.badRequest(w)
 		return
 	}
-	if err := validator.Validate(user); err != nil {
+	if err := validator.Validate(createUserRequest); err != nil {
 		app.clientErrorWithText(w, http.StatusBadRequest, err)
 		return
 	}
@@ -119,6 +119,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := &models.User{Name: createUserRequest.Name}
 	app.infoLog.Printf("[%v] join request for user '%v'", sessionId, user.Name)
 	user, err = app.sessionService.JoinSession(sessionId, user)
 	if err != nil {

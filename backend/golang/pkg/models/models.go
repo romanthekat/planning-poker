@@ -23,9 +23,13 @@ type Session struct {
 	ExpirationChan chan any                   `json:"-"`
 }
 
+type CreateUserRequest struct {
+	Name string `json:"name" validate:"min=1,max=20"`
+}
+
 type User struct {
 	Id         UserId    `json:"id"`
-	Name       string    `json:"name" validate:"min=1,max=20"`
+	Name       string    `json:"name"`
 	LastActive time.Time `json:"last_active"`
 	Active     bool      `json:"active"`
 }
