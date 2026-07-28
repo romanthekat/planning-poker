@@ -50,6 +50,7 @@ func (app *Application) getWebsocketConnection(w http.ResponseWriter, r *http.Re
 	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 		OnPingReceived: nil,
 		OnPongReceived: app.pingPongReceiver(sessionId, userId),
+		OriginPatterns: []string{"*"},
 	})
 	if err != nil {
 		app.serverError(w, err)
