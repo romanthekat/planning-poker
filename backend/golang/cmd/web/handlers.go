@@ -35,13 +35,13 @@ func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) getWebsocketConnection(w http.ResponseWriter, r *http.Request) {
-	sessionId, err := getSessionId(r)
+	sessionId, err := getSessionIdFromPath(r)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
-	userId, err := getUserId(r)
+	userId, err := getUserIdFromPath(r)
 	if err != nil {
 		app.clientError(w, http.StatusNotFound)
 		return
@@ -82,7 +82,7 @@ func (app *Application) pingPongReceiver(sessionId models.SessionId, userId mode
 }
 
 func (app *Application) checkSessionExists(w http.ResponseWriter, r *http.Request) {
-	sessionId, err := getSessionId(r)
+	sessionId, err := getSessionIdFromPath(r)
 	if err != nil {
 		app.badRequest(w)
 		return
@@ -114,7 +114,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionId, err := getSessionId(r)
+	sessionId, err := getSessionIdFromPath(r)
 	if err != nil {
 		app.badRequest(w)
 		return
@@ -148,7 +148,7 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionId, err := getSessionId(r)
+	sessionId, err := getSessionIdFromPath(r)
 	if err != nil {
 		app.badRequest(w)
 		return
@@ -169,13 +169,20 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) show(w http.ResponseWriter, r *http.Request) {
-	sessionId, err := getSessionId(r)
+	var userRequest *models.UserRequest
+	err := json.NewDecoder(r.Body).Decode(&userRequest)
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	sessionId, err := getSessionIdFromPath(r)
 	if err != nil {
 		app.badRequest(w)
 		return
 	}
 
-	err = app.sessionService.Show(sessionId)
+	err = app.sessionService.Show(sessionId, userRequest.UserId)
 	if err != nil {
 		app.notFound(w)
 		return
@@ -183,20 +190,27 @@ func (app *Application) show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) clear(w http.ResponseWriter, r *http.Request) {
-	sessionId, err := getSessionId(r)
+	sessionId, err := getSessionIdFromPath(r)
 	if err != nil {
 		app.badRequest(w)
 		return
 	}
 
-	err = app.sessionService.Clear(sessionId)
+	var userRequest *models.UserRequest
+	err = json.NewDecoder(r.Body).Decode(&userRequest)
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	err = app.sessionService.Clear(sessionId, userRequest.UserId)
 	if err != nil {
 		app.notFound(w)
 		return
 	}
 }
 
-func getSessionId(r *http.Request) (models.SessionId, error) {
+func getSessionIdFromPath(r *http.Request) (models.SessionId, error) {
 	sessionIdStr := r.PathValue("sessionId")
 	sessionId, err := strconv.Atoi(sessionIdStr)
 	if err != nil {
@@ -206,7 +220,7 @@ func getSessionId(r *http.Request) (models.SessionId, error) {
 	return models.SessionId(sessionId), nil
 }
 
-func getUserId(r *http.Request) (models.UserId, error) {
+func getUserIdFromPath(r *http.Request) (models.UserId, error) {
 	userIdStr := r.PathValue("userId")
 	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {

@@ -34,6 +34,11 @@ type User struct {
 	Active     bool      `json:"active"`
 }
 
+// TODO consider getting user id from header, not body
+type UserRequest struct {
+	UserId UserId `json:"user_id"`
+}
+
 type VoteRequest struct {
 	UserId UserId `json:"user_id"`
 	Vote   string `json:"vote"`

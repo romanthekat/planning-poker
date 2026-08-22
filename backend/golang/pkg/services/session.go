@@ -94,15 +94,21 @@ func (s SessionService) allVotesObtained(session *models.Session) bool {
 	return activeUsersVotesCount == activeUsersCount
 }
 
-func (s SessionService) Clear(sessionId models.SessionId) error {
+func (s SessionService) Clear(sessionId models.SessionId, userId models.UserId) error {
 	s.mutex.Lock()
-	defer s.SendUpdates(sessionId)
 	defer s.mutex.Unlock()
 
 	session, err := s.Get(sessionId)
 	if err != nil {
 		return err
 	}
+
+	_, ok := session.Users[userId]
+	if !ok {
+		return models.ErrNoRecord
+	}
+
+	defer s.SendUpdates(sessionId)
 
 	for v := range session.Votes {
 		delete(session.Votes, v)
@@ -233,9 +239,8 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 	return session
 }
 
-func (s SessionService) Show(sessionId models.SessionId) error {
+func (s SessionService) Show(sessionId models.SessionId, userId models.UserId) error {
 	s.mutex.Lock()
-	defer s.SendUpdates(sessionId)
 	defer s.mutex.Unlock()
 
 	session, err := s.sessions.Get(sessionId)
@@ -243,6 +248,12 @@ func (s SessionService) Show(sessionId models.SessionId) error {
 		return err
 	}
 
+	_, ok := session.Users[userId]
+	if !ok {
+		return models.ErrNoRecord
+	}
+
+	defer s.SendUpdates(sessionId)
 	session.VotesHidden = false
 
 	return nil
