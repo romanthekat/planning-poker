@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	"github.com/coder/websocket"
+	"github.com/go-playground/validator/v10"
 	"github.com/romanthekat/planning-poker/pkg/models"
-	"gopkg.in/validator.v2"
 )
 
 func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +109,8 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		app.badRequest(w)
 		return
 	}
-	if err := validator.Validate(createUserRequest); err != nil {
+	//TODO single instance
+	if err := validator.New().Struct(createUserRequest); err != nil {
 		app.clientErrorWithText(w, http.StatusBadRequest, err)
 		return
 	}
@@ -173,6 +174,11 @@ func (app *Application) show(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&userRequest)
 	if err != nil {
 		app.errorLog.Println(err)
+		app.badRequest(w)
+		return
+	}
+	if err := validator.New().Struct(userRequest); err != nil {
+		app.clientErrorWithText(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -200,6 +206,11 @@ func (app *Application) clear(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&userRequest)
 	if err != nil {
 		app.errorLog.Println(err)
+		app.badRequest(w)
+		return
+	}
+	if err := validator.New().Struct(userRequest); err != nil {
+		app.clientErrorWithText(w, http.StatusBadRequest, err)
 		return
 	}
 

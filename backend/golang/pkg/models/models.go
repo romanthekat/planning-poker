@@ -36,7 +36,7 @@ type User struct {
 
 // TODO consider getting user id from header, not body
 type UserRequest struct {
-	UserId UserId `json:"user_id"`
+	UserId UserId `json:"user_id" validate:"required"`
 }
 
 type VoteRequest struct {
