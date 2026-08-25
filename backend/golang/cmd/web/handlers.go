@@ -13,12 +13,6 @@ import (
 )
 
 func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.Header().Set("Allow", "POST")
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
-
 	app.infoLog.Println("creating new session")
 	session, err := app.sessionService.Create()
 	if err != nil {
@@ -146,6 +140,7 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&vote)
 	if err != nil {
 		app.errorLog.Println(err)
+		app.badRequest(w)
 		return
 	}
 

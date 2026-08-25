@@ -1,4 +1,4 @@
-FROM golang:1.22.2 as builder
+FROM golang:1.25 as builder
 WORKDIR /go/planning-poker
 COPY go.mod go.sum ./
 RUN go mod download

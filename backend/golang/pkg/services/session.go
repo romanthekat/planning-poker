@@ -136,7 +136,7 @@ func (s SessionService) tickerFunctionForSession(session *models.Session) func()
 		for {
 			select {
 			case <-session.ExpirationChan:
-				break
+				return
 			case <-ticker.C:
 				for userId, conn := range session.Connections {
 					err := conn.Ping(context.Background())
