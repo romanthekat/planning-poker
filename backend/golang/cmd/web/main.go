@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/romanthekat/planning-poker/pkg/models"
 	"github.com/romanthekat/planning-poker/pkg/models/memory"
 	"github.com/romanthekat/planning-poker/pkg/services"
 )
@@ -14,7 +13,6 @@ import (
 type Application struct {
 	errorLog       *log.Logger
 	infoLog        *log.Logger
-	sessions       models.SessionModel
 	sessionService *services.SessionService
 }
 
@@ -31,7 +29,6 @@ func main() {
 	app := &Application{
 		errorLog:       errorLog,
 		infoLog:        infoLog,
-		sessions:       sessionModel,
 		sessionService: sessionService,
 	}
 

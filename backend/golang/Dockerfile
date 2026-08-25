@@ -8,7 +8,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/web
 
 FROM alpine:latest
 WORKDIR /go/planning-poker
-COPY --from=builder /go/planning-poker/ .
+COPY --from=builder /go/planning-poker/app .
 CMD ["./app"]
 
 EXPOSE 10080

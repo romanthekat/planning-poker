@@ -30,19 +30,28 @@ func NewSessionModel() *SessionModel {
 
 func removeExpiredSessions(sessionModel *SessionModel) {
 	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
 
 	for range ticker.C {
 		sessionModel.mutex.Lock()
 
 		for _, session := range sessionModel.sessions {
-			if time.Since(session.LastActive).Minutes() > SessionExpirationMin {
-				session.ExpirationChan <- struct{}{}
-
-				for _, conn := range session.Connections {
-					conn.Close(websocket.StatusGoingAway, "session has expired")
-				}
-				delete(sessionModel.sessions, session.Id)
+			session.Mutex().RLock()
+			expired := time.Since(session.LastActive).Minutes() > SessionExpirationMin
+			session.Mutex().RUnlock()
+			if !expired {
+				continue
 			}
+
+			session.Mutex().Lock()
+			session.ExpirationChan <- struct{}{}
+
+			for _, conn := range session.Connections {
+				conn.Close(websocket.StatusGoingAway, "session has expired")
+			}
+			session.Mutex().Unlock()
+
+			delete(sessionModel.sessions, session.Id)
 		}
 
 		sessionModel.mutex.Unlock()
@@ -57,6 +66,8 @@ func expireUsers(sessionModel *SessionModel) {
 		sessionModel.mutex.Lock()
 
 		for _, session := range sessionModel.sessions {
+			session.Mutex().Lock()
+
 			for _, user := range session.Users {
 				if time.Since(user.LastActive).Seconds() > UserExpirationSec && user.Active {
 					fmt.Printf("expire user: %+v, session: %d\n", user, session.Id)
@@ -67,6 +78,8 @@ func expireUsers(sessionModel *SessionModel) {
 					//TODO check whether session votes must be shown/all active users voted
 				}
 			}
+
+			session.Mutex().Unlock()
 		}
 
 		sessionModel.mutex.Unlock()
@@ -76,16 +89,7 @@ func expireUsers(sessionModel *SessionModel) {
 func (s SessionModel) Create() (*models.Session, error) {
 	id := models.SessionId(generateRandomId())
 
-	session := &models.Session{
-		Id:             id,
-		Users:          make(map[models.UserId]*models.User),
-		Votes:          make(map[models.UserId]string),
-		VotesInfo:      []models.Vote{},
-		VotesHidden:    true,
-		LastActive:     time.Now(),
-		Connections:    make(map[models.UserId]*websocket.Conn),
-		ExpirationChan: make(chan any, 1),
-	}
+	session := models.NewSession(id)
 
 	s.update(func() { s.sessions[id] = session })
 

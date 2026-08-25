@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/coder/websocket"
@@ -12,6 +13,10 @@ var ErrNoRecord = errors.New("models: no matching record found")
 type SessionId int
 type UserId int
 
+// Session holds all mutable state for a single planning-poker session.
+//
+// Every read or write of these internal fields must happen
+// while holding the session's own lock via Lock/Unlock (or RLock/RUnlock).
 type Session struct {
 	Id             SessionId                  `json:"id"`
 	Users          map[UserId]*User           `json:"-"`
@@ -21,6 +26,29 @@ type Session struct {
 	LastActive     time.Time                  `json:"-"`
 	Connections    map[UserId]*websocket.Conn `json:"-"`
 	ExpirationChan chan any                   `json:"-"`
+
+	mu *sync.RWMutex `json:"-"`
+}
+
+// NewSession creates a new Session with all of its maps/channel/lock initialized.
+func NewSession(id SessionId) *Session {
+	return &Session{
+		Id:             id,
+		Users:          make(map[UserId]*User),
+		Votes:          make(map[UserId]string),
+		VotesInfo:      []Vote{},
+		VotesHidden:    true,
+		LastActive:     time.Now(),
+		Connections:    make(map[UserId]*websocket.Conn),
+		ExpirationChan: make(chan any, 1),
+		mu:             &sync.RWMutex{},
+	}
+}
+
+// Mutex returns the lock that must be held (via Lock/Unlock, or RLock/RUnlock for
+// read-only access) around any read or write.
+func (s *Session) Mutex() *sync.RWMutex {
+	return s.mu
 }
 
 type CreateUserRequest struct {
@@ -40,8 +68,8 @@ type UserRequest struct {
 }
 
 type VoteRequest struct {
-	UserId UserId `json:"user_id"`
-	Vote   string `json:"vote"`
+	UserId UserId `json:"user_id" validate:"required"`
+	Vote   string `json:"vote" validate:"required"`
 }
 
 type Vote struct {

@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/coder/websocket"
@@ -23,46 +22,46 @@ const pingPeriod = (pongWait * 9) / 10
 
 type SessionService struct {
 	sessions models.SessionModel
-	mutex    *sync.Mutex //TODO move all changes of session to model level, then get rid of mutex
 	errorLog *log.Logger
 	infoLog  *log.Logger
 }
 
 func NewSessionService(sessions models.SessionModel, errorLog *log.Logger, infoLog *log.Logger) *SessionService {
-	return &SessionService{sessions, &sync.Mutex{}, errorLog, infoLog}
+	return &SessionService{sessions, errorLog, infoLog}
 }
 
 func (s SessionService) JoinSession(sessionId models.SessionId, user *models.User) (*models.User, error) {
-	s.mutex.Lock()
-	defer s.SendUpdates(sessionId)
-	defer s.mutex.Unlock()
-
-	s.UpdateUserActiveness(user)
-
 	session, err := s.Get(sessionId)
 	if err != nil {
 		return nil, err
 	}
 
-	user.Id = models.UserId(GenerateRandomId())
+	session.Mutex().Lock()
 
+	s.UpdateUserActiveness(user)
+	user.Id = models.UserId(GenerateRandomId())
 	session.Users[user.Id] = user
+
+	session.Mutex().Unlock()
+
+	err = s.SendUpdates(sessionId)
+	if err != nil {
+		return nil, err
+	}
 
 	return user, nil
 }
 
 func (s SessionService) Vote(sessionId models.SessionId, vote *models.VoteRequest) error {
-	s.mutex.Lock()
-	defer s.SendUpdates(sessionId) //TODO controversial to send updates here; side-effect needed, but who's responsible?
-	defer s.mutex.Unlock()
-
 	session, err := s.Get(sessionId)
 	if err != nil {
 		return err
 	}
 
+	session.Mutex().Lock()
 	user, ok := session.Users[vote.UserId]
 	if !ok {
+		session.Mutex().Unlock()
 		return models.ErrNoRecord
 	}
 
@@ -71,8 +70,10 @@ func (s SessionService) Vote(sessionId models.SessionId, vote *models.VoteReques
 	if s.allVotesObtained(session) {
 		session.VotesHidden = false
 	}
+	session.Mutex().Unlock()
 
-	return nil
+	//TODO controversial to send updates here; side-effect needed, but who's responsible?
+	return s.SendUpdates(sessionId)
 }
 
 func (s SessionService) allVotesObtained(session *models.Session) bool {
@@ -95,49 +96,50 @@ func (s SessionService) allVotesObtained(session *models.Session) bool {
 }
 
 func (s SessionService) Clear(sessionId models.SessionId, userId models.UserId) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	session, err := s.Get(sessionId)
 	if err != nil {
 		return err
 	}
 
+	session.Mutex().Lock()
 	_, ok := session.Users[userId]
 	if !ok {
+		session.Mutex().Unlock()
 		return models.ErrNoRecord
 	}
-
-	defer s.SendUpdates(sessionId)
 
 	for v := range session.Votes {
 		delete(session.Votes, v)
 	}
 
 	session.VotesHidden = true
+	session.Mutex().Unlock()
 
-	return nil
+	return s.SendUpdates(sessionId)
 }
 
 func (s SessionService) Create() (*models.Session, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	session, err := s.sessions.Create()
+	if err != nil {
+		return nil, err
+	}
+
 	go s.tickerFunctionForSession(session)()
 
-	return session, err
+	return session, nil
 }
 
 func (s SessionService) tickerFunctionForSession(session *models.Session) func() {
 	return func() {
 		ticker := time.NewTicker(pingPeriod)
+		defer ticker.Stop()
 
 		for {
 			select {
 			case <-session.ExpirationChan:
 				return
 			case <-ticker.C:
+				session.Mutex().Lock()
 				for userId, conn := range session.Connections {
 					err := conn.Ping(context.Background())
 					if err != nil {
@@ -145,6 +147,7 @@ func (s SessionService) tickerFunctionForSession(session *models.Session) func()
 						delete(session.Connections, userId)
 					}
 				}
+				session.Mutex().Unlock()
 			}
 		}
 	}
@@ -156,37 +159,37 @@ func (s SessionService) Get(id models.SessionId) (*models.Session, error) {
 		return nil, err
 	}
 
+	session.Mutex().Lock()
 	session.LastActive = time.Now()
+	session.Mutex().Unlock()
 
-	return session, err
+	return session, nil
 }
 
 func (s SessionService) SaveConnectionForUser(sessionId models.SessionId, userId models.UserId, conn *websocket.Conn) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	session, err := s.Get(sessionId)
 	if err != nil {
 		return err
 	}
 
+	session.Mutex().Lock()
 	_, ok := session.Users[userId]
 	if !ok {
+		session.Mutex().Unlock()
 		return models.ErrNoRecord
 	}
-
-	defer s.SendUpdates(sessionId)
 
 	existingConn, ok := session.Connections[userId]
 	if ok {
 		_ = existingConn.Close(websocket.StatusNormalClosure, "")
 	}
 	session.Connections[userId] = conn
+	session.Mutex().Unlock()
 
 	//naive reader from connection until error happens, otherwise pong handler won't work
 	go s.websocketReaderFunction()(conn)
 
-	return nil
+	return s.SendUpdates(sessionId)
 }
 
 func (s SessionService) websocketReaderFunction() func(c *websocket.Conn) {
@@ -240,23 +243,22 @@ func (s SessionService) GetMaskedSessionForUser(session models.Session, userId m
 }
 
 func (s SessionService) Show(sessionId models.SessionId, userId models.UserId) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	session, err := s.sessions.Get(sessionId)
 	if err != nil {
 		return err
 	}
 
+	session.Mutex().Lock()
 	_, ok := session.Users[userId]
 	if !ok {
+		session.Mutex().Unlock()
 		return models.ErrNoRecord
 	}
 
-	defer s.SendUpdates(sessionId)
 	session.VotesHidden = false
+	session.Mutex().Unlock()
 
-	return nil
+	return s.SendUpdates(sessionId)
 }
 
 func (s SessionService) SendUpdates(sessionId models.SessionId) error {
@@ -268,17 +270,36 @@ func (s SessionService) SendUpdates(sessionId models.SessionId) error {
 		return err
 	}
 
+	// Snapshot per-viewer masked views and the target connections while holding a
+	// read lock, then release it before doing network I/O (wsjson.Write) - a slow or
+	// stuck client must not be able to block every other request for this session.
+	type recipient struct {
+		userId  models.UserId
+		conn    *websocket.Conn
+		session models.Session
+	}
+
+	session.Mutex().RLock()
+
+	recipients := make([]recipient, 0, len(session.Connections))
 	for userId, conn := range session.Connections {
-		sessionToReturn := s.GetMaskedSessionForUser(*session, userId)
-		err = wsjson.Write(context.Background(), conn, sessionToReturn)
+		recipients = append(recipients, recipient{userId, conn, s.GetMaskedSessionForUser(*session, userId)})
+	}
+
+	session.Mutex().RUnlock()
+
+	for _, r := range recipients {
+		err = wsjson.Write(context.Background(), r.conn, r.session)
 		if err != nil {
-			s.errorLog.Printf("[%v] user %v: %s\n", sessionId, userId, err)
-		} else {
-			user, ok := session.Users[userId]
-			if ok {
-				s.UpdateUserActiveness(user)
-			}
+			s.errorLog.Printf("[%v] user %v: %s\n", sessionId, r.userId, err)
+			continue
 		}
+
+		session.Mutex().Lock()
+		if user, ok := session.Users[r.userId]; ok {
+			s.UpdateUserActiveness(user)
+		}
+		session.Mutex().Unlock()
 	}
 
 	return nil

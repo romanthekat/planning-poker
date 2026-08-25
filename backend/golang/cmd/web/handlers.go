@@ -12,6 +12,8 @@ import (
 	"github.com/romanthekat/planning-poker/pkg/models"
 )
 
+var validate = validator.New()
+
 func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 	app.infoLog.Println("creating new session")
 	session, err := app.sessionService.Create()
@@ -68,10 +70,12 @@ func (app *Application) pingPongReceiver(sessionId models.SessionId, userId mode
 			return
 		}
 
+		session.Mutex().Lock()
 		user, ok := session.Users[userId]
 		if ok {
 			app.sessionService.UpdateUserActiveness(user)
 		}
+		session.Mutex().Unlock()
 	}
 }
 
@@ -103,8 +107,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		app.badRequest(w)
 		return
 	}
-	//TODO single instance
-	if err := validator.New().Struct(createUserRequest); err != nil {
+	if err := validate.Struct(createUserRequest); err != nil {
 		app.clientErrorWithText(w, http.StatusBadRequest, err)
 		return
 	}
@@ -143,6 +146,10 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 		app.badRequest(w)
 		return
 	}
+	if err := validate.Struct(vote); err != nil {
+		app.clientErrorWithText(w, http.StatusBadRequest, err)
+		return
+	}
 
 	sessionId, err := getSessionIdFromPath(r)
 	if err != nil {
@@ -172,7 +179,7 @@ func (app *Application) show(w http.ResponseWriter, r *http.Request) {
 		app.badRequest(w)
 		return
 	}
-	if err := validator.New().Struct(userRequest); err != nil {
+	if err := validate.Struct(userRequest); err != nil {
 		app.clientErrorWithText(w, http.StatusBadRequest, err)
 		return
 	}
@@ -204,7 +211,7 @@ func (app *Application) clear(w http.ResponseWriter, r *http.Request) {
 		app.badRequest(w)
 		return
 	}
-	if err := validator.New().Struct(userRequest); err != nil {
+	if err := validate.Struct(userRequest); err != nil {
 		app.clientErrorWithText(w, http.StatusBadRequest, err)
 		return
 	}
