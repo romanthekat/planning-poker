@@ -1,4 +1,4 @@
-package main
+package http
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"github.com/rs/cors"
 )
 
-func (app *Application) routes() http.Handler {
+func (app *Application) Routes() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /api/sessions", app.createSession)

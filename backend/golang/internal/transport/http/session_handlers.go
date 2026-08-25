@@ -1,18 +1,13 @@
-package main
+package http
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 
-	"github.com/coder/websocket"
-	"github.com/go-playground/validator/v10"
-	"github.com/romanthekat/planning-poker/pkg/models"
+	"github.com/romanthekat/planning-poker/internal/poker"
 )
-
-var validate = validator.New()
 
 func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 	app.infoLog.Println("creating new session")
@@ -30,55 +25,6 @@ func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *Application) getWebsocketConnection(w http.ResponseWriter, r *http.Request) {
-	sessionId, err := getSessionIdFromPath(r)
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
-	userId, err := getUserIdFromPath(r)
-	if err != nil {
-		app.clientError(w, http.StatusNotFound)
-		return
-	}
-
-	conn, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-		OnPingReceived: nil,
-		OnPongReceived: app.pingPongReceiver(sessionId, userId),
-		OriginPatterns: []string{"*"},
-	})
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = app.sessionService.SaveConnectionForUser(sessionId, userId, conn)
-	if err != nil {
-		if errors.Is(err, models.ErrNoRecord) {
-			app.notFound(w)
-		} else {
-			app.badRequest(w)
-		}
-	}
-}
-
-func (app *Application) pingPongReceiver(sessionId models.SessionId, userId models.UserId) func(context.Context, []byte) {
-	return func(ctx context.Context, payload []byte) {
-		session, err := app.sessionService.Get(sessionId)
-		if err != nil {
-			return
-		}
-
-		session.Mutex().Lock()
-		user, ok := session.Users[userId]
-		if ok {
-			app.sessionService.UpdateUserActiveness(user)
-		}
-		session.Mutex().Unlock()
-	}
-}
-
 func (app *Application) checkSessionExists(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := getSessionIdFromPath(r)
 	if err != nil {
@@ -88,7 +34,7 @@ func (app *Application) checkSessionExists(w http.ResponseWriter, r *http.Reques
 
 	_, err = app.sessionService.Get(sessionId)
 	if err != nil {
-		if errors.Is(err, models.ErrNoRecord) {
+		if errors.Is(err, poker.ErrNoRecord) {
 			app.notFound(w)
 		} else {
 			app.serverError(w, err)
@@ -100,7 +46,7 @@ func (app *Application) checkSessionExists(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
-	var createUserRequest *models.CreateUserRequest
+	var createUserRequest *poker.CreateUserRequest
 	err := json.NewDecoder(r.Body).Decode(&createUserRequest)
 	if err != nil {
 		app.errorLog.Println(err)
@@ -118,11 +64,11 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := &models.User{Name: createUserRequest.Name}
+	user := &poker.User{Name: createUserRequest.Name}
 	app.infoLog.Printf("[%v] join request for user '%v'", sessionId, user.Name)
 	user, err = app.sessionService.JoinSession(sessionId, user)
 	if err != nil {
-		if errors.Is(err, models.ErrNoRecord) {
+		if errors.Is(err, poker.ErrNoRecord) {
 			app.notFound(w)
 		} else {
 			app.serverError(w, err)
@@ -139,7 +85,7 @@ func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
-	var vote *models.VoteRequest
+	var vote *poker.VoteRequest
 	err := json.NewDecoder(r.Body).Decode(&vote)
 	if err != nil {
 		app.errorLog.Println(err)
@@ -172,7 +118,7 @@ func (app *Application) vote(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) show(w http.ResponseWriter, r *http.Request) {
-	var userRequest *models.UserRequest
+	var userRequest *poker.UserRequest
 	err := json.NewDecoder(r.Body).Decode(&userRequest)
 	if err != nil {
 		app.errorLog.Println(err)
@@ -204,7 +150,7 @@ func (app *Application) clear(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var userRequest *models.UserRequest
+	var userRequest *poker.UserRequest
 	err = json.NewDecoder(r.Body).Decode(&userRequest)
 	if err != nil {
 		app.errorLog.Println(err)
@@ -223,22 +169,22 @@ func (app *Application) clear(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getSessionIdFromPath(r *http.Request) (models.SessionId, error) {
+func getSessionIdFromPath(r *http.Request) (poker.SessionId, error) {
 	sessionIdStr := r.PathValue("sessionId")
 	sessionId, err := strconv.Atoi(sessionIdStr)
 	if err != nil {
 		return -1, err
 	}
 
-	return models.SessionId(sessionId), nil
+	return poker.SessionId(sessionId), nil
 }
 
-func getUserIdFromPath(r *http.Request) (models.UserId, error) {
+func getUserIdFromPath(r *http.Request) (poker.UserId, error) {
 	userIdStr := r.PathValue("userId")
 	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
 		return -1, err
 	}
 
-	return models.UserId(userId), nil
+	return poker.UserId(userId), nil
 }

@@ -1,10 +1,17 @@
-package main
+package http
 
 import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+
+	"github.com/go-playground/validator/v10"
 )
+
+// validate is a single, reusable validator instance: it builds and caches reflection
+// metadata internally, and is documented as safe for concurrent use, so there is no
+// need (and a real cost) to construct a new one per request.
+var validate = validator.New()
 
 // The serverError helper writes an error message and stack trace to the errorLog,
 // then sends a generic 500 Internal Server Error response to the user.

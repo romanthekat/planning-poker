@@ -6,15 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/romanthekat/planning-poker/pkg/models/memory"
-	"github.com/romanthekat/planning-poker/pkg/services"
+	"github.com/romanthekat/planning-poker/internal/poker"
+	"github.com/romanthekat/planning-poker/internal/storage/memory"
+	httptransport "github.com/romanthekat/planning-poker/internal/transport/http"
 )
-
-type Application struct {
-	errorLog       *log.Logger
-	infoLog        *log.Logger
-	sessionService *services.SessionService
-}
 
 func main() {
 	addr := flag.String("addr", ":10080", "HTTP network address")
@@ -23,19 +18,16 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	sessionModel := memory.NewSessionModel()
-	sessionService := services.NewSessionService(sessionModel, errorLog, infoLog)
+	store := memory.NewStore()
+	hub := poker.NewHub(errorLog, infoLog)
+	sessionService := poker.NewSessionService(store, hub, errorLog, infoLog)
 
-	app := &Application{
-		errorLog:       errorLog,
-		infoLog:        infoLog,
-		sessionService: sessionService,
-	}
+	app := httptransport.NewApplication(sessionService, errorLog, infoLog)
 
 	srv := &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler:  app.routes(),
+		Handler:  app.Routes(),
 	}
 
 	infoLog.Printf("Starting HTTP server on %s", *addr)
