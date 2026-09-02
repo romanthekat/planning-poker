@@ -101,21 +101,21 @@ func TestCheckSessionExists_Found(t *testing.T) {
 	srv := newTestServer(t)
 	session := createSession(t, srv)
 
-	resp, err := http.Get(fmt.Sprintf("%s/api/sessions/%d", srv.URL, session.Id))
+	resp, err := http.Get(fmt.Sprintf("%s/api/sessions/%d?userId=%d", srv.URL, session.Id, poker.UserId(42)))
 	if err != nil {
 		t.Fatalf("GET: %v", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusNoContent {
-		t.Errorf("checkSessionExists() status = %d, want %d", resp.StatusCode, http.StatusNoContent)
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("checkSessionExists() status = %d, want %d", resp.StatusCode, http.StatusOK)
 	}
 }
 
 func TestCheckSessionExists_NotFound(t *testing.T) {
 	srv := newTestServer(t)
 
-	resp, err := http.Get(srv.URL + "/api/sessions/999999")
+	resp, err := http.Get(srv.URL + "/api/sessions/999999?userId=999999")
 	if err != nil {
 		t.Fatalf("GET: %v", err)
 	}

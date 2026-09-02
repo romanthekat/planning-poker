@@ -11,7 +11,7 @@ func (app *Application) Routes() http.Handler {
 
 	mux.HandleFunc("POST /api/sessions", app.createSession)
 
-	mux.HandleFunc("GET /api/sessions/{sessionId}", app.checkSessionExists)
+	mux.HandleFunc("GET /api/sessions/{sessionId}", app.getSessionById)
 	mux.HandleFunc("POST /api/sessions/{sessionId}/join", app.joinSession)
 	//TODO mux can't separate /number vs /text
 	mux.HandleFunc("GET /api/sessions/{sessionId}/get/{userId}", app.getWebsocketConnection)

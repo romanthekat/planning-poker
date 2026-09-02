@@ -9,12 +9,10 @@ POST {{baseUrl}}/api/sessions
 client.global.set("sessionId", JSON.parse(response.body).id);
 %}
 
-###
-### 2. Check if a session exists
-GET {{baseUrl}}/api/sessions/{{sessionId}}
+
 
 ###
-### 3. Join a session (Alice) — response handler captures userId automatically
+### 2. Join a session (Alice) — response handler captures userId automatically
 POST {{baseUrl}}/api/sessions/{{sessionId}}/join
 Content-Type: application/json
 
@@ -25,6 +23,10 @@ Content-Type: application/json
 > {%
 client.global.set("userId", JSON.parse(response.body).id);
 %}
+
+###
+### 3. Get session by id
+GET {{baseUrl}}/api/sessions/{{sessionId}}?userId={{userId}}
 
 ###
 ### 4. Join a session — second user

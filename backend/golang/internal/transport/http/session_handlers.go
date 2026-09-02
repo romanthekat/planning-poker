@@ -25,14 +25,20 @@ func (app *Application) createSession(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *Application) checkSessionExists(w http.ResponseWriter, r *http.Request) {
+func (app *Application) getSessionById(w http.ResponseWriter, r *http.Request) {
 	sessionId, err := getSessionIdFromPath(r)
 	if err != nil {
 		app.badRequest(w)
 		return
 	}
 
-	_, err = app.sessionService.Get(sessionId)
+	userId, err := getUserIdFromParam(r)
+	if err != nil {
+		app.badRequest(w)
+		return
+	}
+
+	session, err := app.sessionService.Get(sessionId)
 	if err != nil {
 		if errors.Is(err, poker.ErrNoRecord) {
 			app.notFound(w)
@@ -42,7 +48,12 @@ func (app *Application) checkSessionExists(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	app.noContent(w)
+	maskedSession := app.sessionService.GetMaskedSessionForUser(*session, userId)
+	err = json.NewEncoder(w).Encode(maskedSession)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 }
 
 func (app *Application) joinSession(w http.ResponseWriter, r *http.Request) {
@@ -177,6 +188,16 @@ func getSessionIdFromPath(r *http.Request) (poker.SessionId, error) {
 	}
 
 	return poker.SessionId(sessionId), nil
+}
+
+func getUserIdFromParam(r *http.Request) (poker.UserId, error) {
+	userIdStr := r.URL.Query().Get("userId")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		return -1, err
+	}
+
+	return poker.UserId(userId), nil
 }
 
 func getUserIdFromPath(r *http.Request) (poker.UserId, error) {
