@@ -32,12 +32,6 @@ func (app *Application) getSessionById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := getUserIdFromParam(r)
-	if err != nil {
-		app.badRequest(w)
-		return
-	}
-
 	session, err := app.sessionService.Get(sessionId)
 	if err != nil {
 		if errors.Is(err, poker.ErrNoRecord) {
@@ -45,6 +39,17 @@ func (app *Application) getSessionById(w http.ResponseWriter, r *http.Request) {
 		} else {
 			app.serverError(w, err)
 		}
+		return
+	}
+
+	userId, err := getUserIdFromParam(r)
+	if errors.Is(err, poker.ErrNoUserId) {
+		// in this specific case user id is optional
+		app.noContent(w)
+		return
+	}
+	if err != nil {
+		app.badRequest(w)
 		return
 	}
 
@@ -192,6 +197,10 @@ func getSessionIdFromPath(r *http.Request) (poker.SessionId, error) {
 
 func getUserIdFromParam(r *http.Request) (poker.UserId, error) {
 	userIdStr := r.URL.Query().Get("userId")
+	if userIdStr == "" {
+		return -1, poker.ErrNoUserId
+	}
+
 	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
 		return -1, err

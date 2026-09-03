@@ -10,7 +10,6 @@ client.global.set("sessionId", JSON.parse(response.body).id);
 %}
 
 
-
 ###
 ### 2. Join a session (Alice) — response handler captures userId automatically
 POST {{baseUrl}}/api/sessions/{{sessionId}}/join
