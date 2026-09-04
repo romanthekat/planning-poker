@@ -63,7 +63,7 @@ func (s *SessionService) JoinSession(sessionId SessionId, user *User) (*User, er
 	}
 
 	session.Mutex().Lock()
-	s.UpdateUserActiveness(user)
+	s.UpdateUserActiveness(sessionId, user)
 	user.Id = UserId(GenerateRandomId())
 	session.Users[user.Id] = user
 	session.Mutex().Unlock()
@@ -331,7 +331,7 @@ func (s *SessionService) SendUpdates(sessionId SessionId) error {
 		defer session.Mutex().Unlock()
 
 		if user, ok := session.Users[userId]; ok {
-			s.UpdateUserActiveness(user)
+			s.UpdateUserActiveness(sessionId, user)
 		}
 	}
 
@@ -340,7 +340,8 @@ func (s *SessionService) SendUpdates(sessionId SessionId) error {
 	return nil
 }
 
-func (s *SessionService) UpdateUserActiveness(user *User) {
+func (s *SessionService) UpdateUserActiveness(sessionId SessionId, user *User) {
+	//s.infoLog.Printf("[%v][%v] update user activeness", sessionId, user.Name)
 	user.LastActive = time.Now()
 	user.Active = true
 }

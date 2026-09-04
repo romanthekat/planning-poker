@@ -52,7 +52,7 @@ func (app *Application) pingPongReceiver(sessionId poker.SessionId, userId poker
 		session.Mutex().Lock()
 		user, ok := session.Users[userId]
 		if ok {
-			app.sessionService.UpdateUserActiveness(user)
+			app.sessionService.UpdateUserActiveness(sessionId, user)
 		}
 		session.Mutex().Unlock()
 	}
