@@ -175,6 +175,7 @@ func (s *SessionService) removeExpiredSessions() {
 		for _, session := range s.store.List() {
 			session.Mutex().RLock()
 			expired := time.Since(session.LastActive).Minutes() > SessionExpirationMin
+			s.infoLog.Printf("[%v] session last active at %s\n", session.Id, session.LastActive)
 			session.Mutex().RUnlock()
 			if !expired {
 				continue
@@ -187,6 +188,7 @@ func (s *SessionService) removeExpiredSessions() {
 
 func (s *SessionService) expireSession(id SessionId) {
 	s.cancelMu.Lock()
+	s.infoLog.Printf("[%v] expiring session due to inactivity\n", id)
 	if cancel, ok := s.cancelExpiration[id]; ok {
 		cancel()
 		delete(s.cancelExpiration, id)
@@ -213,7 +215,7 @@ func (s *SessionService) expireUsers() {
 
 			for _, user := range session.Users {
 				if time.Since(user.LastActive).Seconds() > UserExpirationSec && user.Active {
-					s.infoLog.Printf("expire user: %+v, session: %d\n", user, session.Id)
+					s.infoLog.Printf("[%v] expire user: %+v\n", session.Id, user)
 					user.Active = false
 
 					delete(session.Users, user.Id)
@@ -233,6 +235,7 @@ func (s *SessionService) Get(id SessionId) (*Session, error) {
 	}
 
 	session.Mutex().Lock()
+	s.infoLog.Printf("[%v] session requested; refreshing last active\n", id)
 	session.LastActive = time.Now()
 	session.Mutex().Unlock()
 
