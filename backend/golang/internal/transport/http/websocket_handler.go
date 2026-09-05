@@ -35,9 +35,9 @@ func (app *Application) getWebsocketConnection(w http.ResponseWriter, r *http.Re
 	err = app.sessionService.SaveConnectionForUser(sessionId, userId, conn)
 	if err != nil {
 		if errors.Is(err, poker.ErrNoRecord) {
-			app.notFound(w)
+			_ = conn.Close(websocket.StatusPolicyViolation, "user not found")
 		} else {
-			app.badRequest(w)
+			_ = conn.Close(websocket.StatusPolicyViolation, "bad request")
 		}
 	}
 }
